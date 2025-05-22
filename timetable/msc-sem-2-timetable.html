@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam Timetable - May/June 2025</title>
     <style>
+        /* Your existing CSS styles remain the same */
         * {
             margin: 0;
             padding: 0;
@@ -168,6 +169,10 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #667eea;
+            /* Added for better display of full time */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .exam-card.today {
@@ -372,53 +377,103 @@
 
     <script>
         const examDates = [
-            { id: 'exam-1', date: new Date('2025-05-26'), subject: 'DBMS' },
-            { id: 'exam-2', date: new Date('2025-06-02'), subject: 'Python' },
-            { id: 'exam-3', date: new Date('2025-06-05'), subject: 'Compiler' },
-            { id: 'exam-4', date: new Date('2025-06-09'), subject: 'Numerical' },
-            { id: 'exam-5', date: new Date('2025-06-12'), subject: 'Computer Design' }
+            // Note: If you want *exact* time countdown, you should include the time (e.g., '2025-05-26T09:00:00')
+            { id: 'exam-1', date: new Date('2025-05-26T09:00:00'), subject: 'DBMS' }, // Example: 9 AM
+            { id: 'exam-2', date: new Date('2025-06-02T10:30:00'), subject: 'Python' },
+            { id: 'exam-3', date: new Date('2025-06-05T14:00:00'), subject: 'Compiler' },
+            { id: 'exam-4', date: new Date('2025-06-09T09:00:00'), subject: 'Numerical' },
+            { id: 'exam-5', date: new Date('2025-06-12T13:00:00'), subject: 'Computer Design' }
         ];
+
+        // Function to format time units (e.g., add leading zero)
+        function padZero(num) {
+            return num < 10 ? '0' + num : num;
+        }
+
+        // Function to calculate and format countdown string
+        function getCountdownString(timeDiff) {
+            if (timeDiff <= 0) {
+                return { text: 'Completed', status: 'past' };
+            }
+
+            const seconds = Math.floor((timeDiff / 1000) % 60);
+            const minutes = Math.floor((timeDiff / (1000 * 60)) % 60);
+            const hours = Math.floor((timeDiff / (1000 * 60 * 60)) % 24);
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+            let countdownParts = [];
+            if (days > 0) {
+                countdownParts.push(`${days}d`);
+            }
+            // Always show hours, minutes, seconds if time remains, even if days is 0
+            countdownParts.push(`${padZero(hours)}h`);
+            countdownParts.push(`${padZero(minutes)}m`);
+            countdownParts.push(`${padZero(seconds)}s`);
+
+            return {
+                text: countdownParts.join(' '),
+                status: days === 0 ? 'today' : 'future'
+            };
+        }
 
         function updateCountdowns() {
             const now = new Date();
-            let nextExamDays = null;
+            let minUpcomingTimeDiff = Infinity; // To track the time to the nearest upcoming exam
 
             examDates.forEach((exam, index) => {
-                const timeDiff = exam.date.getTime() - now.getTime();
-                const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                const timeDiff = exam.date.getTime() - now.getTime(); // Difference in milliseconds
                 
                 const countdownElement = document.getElementById(`countdown-${index + 1}`);
                 const examCard = document.getElementById(exam.id);
                 
-                if (days < 0) {
-                    countdownElement.textContent = 'Completed';
+                const { text, status } = getCountdownString(timeDiff);
+
+                countdownElement.textContent = text;
+
+                // Remove previous classes
+                examCard.classList.remove('past', 'today');
+
+                // Add current status class
+                if (status === 'past') {
                     examCard.classList.add('past');
-                } else if (days === 0) {
-                    countdownElement.textContent = 'Today!';
+                } else if (status === 'today') {
                     examCard.classList.add('today');
-                    if (nextExamDays === null) nextExamDays = 0;
-                } else {
-                    countdownElement.textContent = `${days} days`;
-                    if (nextExamDays === null) nextExamDays = days;
+                }
+
+                // Update minUpcomingTimeDiff for the "Next Exam" stat
+                if (timeDiff > 0) { // Only consider upcoming exams
+                    minUpcomingTimeDiff = Math.min(minUpcomingTimeDiff, timeDiff);
                 }
             });
 
             // Update next exam stat
             const nextExamElement = document.getElementById('next-exam');
-            if (nextExamDays === null) {
+            if (minUpcomingTimeDiff === Infinity) {
                 nextExamElement.textContent = 'Done!';
-            } else if (nextExamDays === 0) {
-                nextExamElement.textContent = 'Today';
             } else {
-                nextExamElement.textContent = `${nextExamDays}d`;
+                // Calculate days for the stat (rounded up to full days)
+                const daysToNext = Math.ceil(minUpcomingTimeDiff / (1000 * 3600 * 24));
+                nextExamElement.textContent = daysToNext === 0 ? 'Today' : `${daysToNext}d`;
             }
         }
 
-        // Update countdowns immediately and then every hour
-        updateCountdowns();
-        setInterval(updateCountdowns, 3600000);
+        // Initialize total exams and days span (these are static from examDates)
+        document.getElementById('total-exams').textContent = examDates.length;
+        if (examDates.length > 0) {
+            const firstExam = examDates[0].date.getTime();
+            const lastExam = examDates[examDates.length - 1].date.getTime();
+            const spanMs = lastExam - firstExam;
+            const spanDays = Math.ceil(spanMs / (1000 * 3600 * 24));
+            document.getElementById('days-span').textContent = spanDays;
+        } else {
+            document.getElementById('days-span').textContent = '0';
+        }
 
-        // Add some interactive animations
+        // Update countdowns immediately and then every second
+        updateCountdowns();
+        setInterval(updateCountdowns, 1000); // Update every second
+
+        // Add some interactive animations (your existing code)
         document.querySelectorAll('.exam-card').forEach(card => {
             card.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-8px) scale(1.02)';
@@ -429,5 +484,43 @@
             });
         });
     </script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
 </body>
 </html>
