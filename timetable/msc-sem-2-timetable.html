@@ -75,6 +75,17 @@
             position: relative;
             z-index: 1;
         }
+        /* Style for the important room note */
+        .header .room-notice {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            margin-top: 15px;
+            padding: 8px;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 8px;
+            display: inline-block;
+        }
+
 
         .timetable {
             padding: 40px 30px;
@@ -147,7 +158,33 @@
             color: #2c3e50;
             text-transform: capitalize;
             position: relative;
+            margin-bottom: 10px; /* Added margin for spacing */
         }
+
+        /* New styles for exam details */
+        .exam-details {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #4a4a4a; /* Slightly darker grey for readability */
+            padding-left: 5px;
+            border-left: 3px solid #e0e0e0; /* Subtle left border */
+        }
+        .exam-details p {
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        .exam-details p strong {
+            color: #2c3e50; /* Match subject color for labels */
+            min-width: 80px; /* Align labels nicely */
+            display: inline-block;
+        }
+        .exam-details .venue-note {
+            font-style: italic;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
 
         .countdown {
             margin-top: 15px;
@@ -242,6 +279,9 @@
             .header h1 {
                 font-size: 2rem;
             }
+            .header .room-notice {
+                font-size: 0.8rem;
+            }
 
             .timetable {
                 padding: 30px 20px;
@@ -258,6 +298,9 @@
 
             .subject {
                 font-size: 1.2rem;
+            }
+            .exam-details p strong {
+                min-width: 70px;
             }
 
             .stats {
@@ -277,6 +320,11 @@
             .subject {
                 font-size: 1.1rem;
             }
+            .exam-details p strong {
+                display: block; /* Stack labels above values on very small screens */
+                min-width: auto;
+                margin-bottom: 2px;
+            }
         }
     </style>
 </head>
@@ -285,6 +333,10 @@
         <div class="header">
             <h1>📚 Exam Schedule</h1>
             <p>May - June 2025</p>
+            <!-- General Note about Room Number -->
+            <p class="room-notice">
+                <strong>Room Assignment:</strong> Please check the notice board at Kalyan PG College on exam day for your specific room number.
+            </p>
         </div>
 
         <div class="timetable">
@@ -296,8 +348,15 @@
                     </div>
                 </div>
                 <div class="subject">Database Management System</div>
+                <!-- Exam Details Section -->
+                <div class="exam-details">
+                    <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
+                    <p><strong>Type:</strong> Written</p>
+                    <p><strong>Venue:</strong> Kalyan PG College, Sector 7</p>
+                    <p class="venue-note">Room no. to be checked on college notice board.</p>
+                </div>
                 <div class="countdown">
-                    <div class="countdown-label">Time Remaining</div>
+                    <div class="countdown-label">Time Remaining (Be in room by 10:50 AM)</div>
                     <div class="countdown-value" id="countdown-1">--</div>
                 </div>
             </div>
@@ -310,8 +369,15 @@
                     </div>
                 </div>
                 <div class="subject">Python Programming</div>
+                <!-- Exam Details Section -->
+                <div class="exam-details">
+                    <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
+                    <p><strong>Type:</strong> Written</p>
+                    <p><strong>Venue:</strong> Kalyan PG College, Sector 7</p>
+                    <p class="venue-note">Room no. to be checked on college notice board.</p>
+                </div>
                 <div class="countdown">
-                    <div class="countdown-label">Time Remaining</div>
+                    <div class="countdown-label">Time Remaining (Be in room by 10:50 AM)</div>
                     <div class="countdown-value" id="countdown-2">--</div>
                 </div>
             </div>
@@ -324,8 +390,15 @@
                     </div>
                 </div>
                 <div class="subject">Compiler Design</div>
+                <!-- Exam Details Section -->
+                <div class="exam-details">
+                    <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
+                    <p><strong>Type:</strong> Written</p>
+                    <p><strong>Venue:</strong> Kalyan PG College, Sector 7</p>
+                    <p class="venue-note">Room no. to be checked on college notice board.</p>
+                </div>
                 <div class="countdown">
-                    <div class="countdown-label">Time Remaining</div>
+                    <div class="countdown-label">Time Remaining (Be in room by 10:50 AM)</div>
                     <div class="countdown-value" id="countdown-3">--</div>
                 </div>
             </div>
@@ -338,8 +411,15 @@
                     </div>
                 </div>
                 <div class="subject">Numerical Analysis</div>
+                <!-- Exam Details Section -->
+                <div class="exam-details">
+                    <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
+                    <p><strong>Type:</strong> Written</p>
+                    <p><strong>Venue:</strong> Kalyan PG College, Sector 7</p>
+                    <p class="venue-note">Room no. to be checked on college notice board.</p>
+                </div>
                 <div class="countdown">
-                    <div class="countdown-label">Time Remaining</div>
+                    <div class="countdown-label">Time Remaining (Be in room by 10:50 AM)</div>
                     <div class="countdown-value" id="countdown-4">--</div>
                 </div>
             </div>
@@ -352,8 +432,15 @@
                     </div>
                 </div>
                 <div class="subject">Advanced Computer Design</div>
+                <!-- Exam Details Section -->
+                <div class="exam-details">
+                    <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
+                    <p><strong>Type:</strong> Written</p>
+                    <p><strong>Venue:</strong> Kalyan PG College, Sector 7</p>
+                    <p class="venue-note">Room no. to be checked on college notice board.</p>
+                </div>
                 <div class="countdown">
-                    <div class="countdown-label">Time Remaining</div>
+                    <div class="countdown-label">Time Remaining (Be in room by 10:50 AM)</div>
                     <div class="countdown-value" id="countdown-5">--</div>
                 </div>
             </div>
@@ -377,12 +464,15 @@
 
     <script>
         const examDates = [
-            // Note: If you want *exact* time countdown, you should include the time (e.g., '2025-05-26T09:00:00')
-            { id: 'exam-1', date: new Date('2025-05-26T09:00:00'), subject: 'DBMS' }, // Example: 9 AM
-            { id: 'exam-2', date: new Date('2025-06-02T10:30:00'), subject: 'Python' },
-            { id: 'exam-3', date: new Date('2025-06-05T14:00:00'), subject: 'Compiler' },
-            { id: 'exam-4', date: new Date('2025-06-09T09:00:00'), subject: 'Numerical' },
-            { id: 'exam-5', date: new Date('2025-06-12T13:00:00'), subject: 'Computer Design' }
+            // All exams start at 11:00 AM, be in room by 10:50 AM.
+            // Countdown is to 10:50 AM local time.
+            { id: 'exam-1', date: new Date('2025-05-26T10:50:00'), subject: 'DBMS' },
+            { id: 'exam-2', date: new Date('2025-06-02T10:50:00'), subject: 'Python' },
+            { id: 'exam-3', date: new Date('2025-06-05T10:50:00'), subject: 'Compiler' },
+            { id: 'exam-4', date: new Date('2025-06-09T10:50:00'), subject: 'Numerical' },
+            { id: 'exam-5', date: new Date('2025-06-12T10:50:00'), subject: 'Computer Design' }
+            // You could also add the new details to this JS object if you prefer
+            // to generate the exam-details HTML dynamically, but for now, static HTML is fine.
         ];
 
         // Function to format time units (e.g., add leading zero)
@@ -393,7 +483,7 @@
         // Function to calculate and format countdown string
         function getCountdownString(timeDiff) {
             if (timeDiff <= 0) {
-                return { text: 'Completed', status: 'past' };
+                return { text: 'Completed / In Progress', status: 'past' }; // Changed text for clarity
             }
 
             const seconds = Math.floor((timeDiff / 1000) % 60);
@@ -412,13 +502,14 @@
 
             return {
                 text: countdownParts.join(' '),
-                status: days === 0 ? 'today' : 'future'
+                status: days === 0 && hours < 24 && timeDiff > 0 ? 'today' : 'future' // Refined 'today' logic
             };
         }
 
         function updateCountdowns() {
             const now = new Date();
             let minUpcomingTimeDiff = Infinity; // To track the time to the nearest upcoming exam
+            let nextUpcomingExam = null;
 
             examDates.forEach((exam, index) => {
                 const timeDiff = exam.date.getTime() - now.getTime(); // Difference in milliseconds
@@ -436,51 +527,65 @@
                 // Add current status class
                 if (status === 'past') {
                     examCard.classList.add('past');
-                } else if (status === 'today') {
+                } else if (status === 'today') { // 'today' means countdown is active and it's on the exam day
                     examCard.classList.add('today');
                 }
 
                 // Update minUpcomingTimeDiff for the "Next Exam" stat
-                if (timeDiff > 0) { // Only consider upcoming exams
-                    minUpcomingTimeDiff = Math.min(minUpcomingTimeDiff, timeDiff);
+                if (timeDiff > 0) { // Only consider upcoming exams (time to be in room)
+                    if (timeDiff < minUpcomingTimeDiff) {
+                        minUpcomingTimeDiff = timeDiff;
+                        nextUpcomingExam = exam;
+                    }
                 }
             });
 
             // Update next exam stat
             const nextExamElement = document.getElementById('next-exam');
-            if (minUpcomingTimeDiff === Infinity) {
-                nextExamElement.textContent = 'Done!';
+            if (minUpcomingTimeDiff === Infinity || !nextUpcomingExam) {
+                nextExamElement.textContent = 'All Done!';
             } else {
-                // Calculate days for the stat (rounded up to full days)
+                // Calculate days for the stat (rounded up to full days until 10:50 AM)
                 const daysToNext = Math.ceil(minUpcomingTimeDiff / (1000 * 3600 * 24));
-                nextExamElement.textContent = daysToNext === 0 ? 'Today' : `${daysToNext}d`;
+                
+                if (daysToNext > 1) {
+                     nextExamElement.textContent = `${daysToNext}d`;
+                } else if (daysToNext === 1 && (minUpcomingTimeDiff > (1000 * 3600 * (24 - (new Date().getHours()))))) { // Check if it's truly "tomorrow" vs less than 24h today
+                     nextExamElement.textContent = `Tomorrow`;
+                } else if (daysToNext === 0 || (daysToNext ===1 && minUpcomingTimeDiff < (1000 * 3600 * 24))) { // Today
+                     nextExamElement.textContent = `Today (${nextUpcomingExam.subject})`;
+                } else {
+                     nextExamElement.textContent = `${daysToNext}d`; 
+                }
             }
         }
 
-        // Initialize total exams and days span (these are static from examDates)
+        // Initialize total exams and days span
         document.getElementById('total-exams').textContent = examDates.length;
         if (examDates.length > 0) {
-            const firstExam = examDates[0].date.getTime();
-            const lastExam = examDates[examDates.length - 1].date.getTime();
-            const spanMs = lastExam - firstExam;
-            const spanDays = Math.ceil(spanMs / (1000 * 3600 * 24));
+            const firstExamDate = examDates[0].date;
+            const lastExamDate = examDates[examDates.length - 1].date;
+            
+            const firstDay = new Date(firstExamDate.getFullYear(), firstExamDate.getMonth(), firstExamDate.getDate());
+            const lastDay = new Date(lastExamDate.getFullYear(), lastExamDate.getMonth(), lastExamDate.getDate());
+
+            const spanMs = lastDay.getTime() - firstDay.getTime();
+            const spanDays = Math.max(0, Math.floor(spanMs / (1000 * 3600 * 24)) + 1) ; 
             document.getElementById('days-span').textContent = spanDays;
         } else {
             document.getElementById('days-span').textContent = '0';
         }
 
-        // Update countdowns immediately and then every second
         updateCountdowns();
-        setInterval(updateCountdowns, 1000); // Update every second
+        setInterval(updateCountdowns, 1000);
 
-        // Add some interactive animations (your existing code)
         document.querySelectorAll('.exam-card').forEach(card => {
             card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-8px) scale(1.02)';
+                // this.style.transform = 'translateY(-8px) scale(1.02)'; 
             });
             
             card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
+                // this.style.transform = 'translateY(0) scale(1)';
             });
         });
     </script>
