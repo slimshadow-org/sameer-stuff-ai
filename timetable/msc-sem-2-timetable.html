@@ -75,7 +75,6 @@
             position: relative;
             z-index: 1;
         }
-        /* Style for the important room note */
         .header .room-notice {
             font-size: 0.9rem;
             opacity: 0.85;
@@ -158,25 +157,24 @@
             color: #2c3e50;
             text-transform: capitalize;
             position: relative;
-            margin-bottom: 10px; /* Added margin for spacing */
+            margin-bottom: 10px;
         }
 
-        /* New styles for exam details */
         .exam-details {
             margin-top: 10px;
             margin-bottom: 15px;
             font-size: 0.9rem;
-            color: #4a4a4a; /* Slightly darker grey for readability */
+            color: #4a4a4a;
             padding-left: 5px;
-            border-left: 3px solid #e0e0e0; /* Subtle left border */
+            border-left: 3px solid #e0e0e0;
         }
         .exam-details p {
             margin-bottom: 6px;
             line-height: 1.5;
         }
         .exam-details p strong {
-            color: #2c3e50; /* Match subject color for labels */
-            min-width: 80px; /* Align labels nicely */
+            color: #2c3e50;
+            min-width: 80px;
             display: inline-block;
         }
         .exam-details .venue-note {
@@ -206,7 +204,6 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #667eea;
-            /* Added for better display of full time */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -235,6 +232,19 @@
         .exam-card.past .date {
             background: #95a5a6;
         }
+
+        /* ADDED/MODIFIED CSS FOR STRIKETHROUGH */
+        .exam-card.past .subject,
+        .exam-card.past .exam-details p {
+            text-decoration: line-through;
+            /* Optional: You can adjust the strikethrough color if needed */
+            /* text-decoration-color: rgba(0, 0, 0, 0.4); */
+        }
+        .exam-card.past .countdown .countdown-value {
+            text-decoration: none !important; /* Ensure "Completed" is not struck through */
+        }
+        /* END OF ADDED/MODIFIED CSS */
+
 
         .stats {
             display: grid;
@@ -271,38 +281,31 @@
             body {
                 padding: 10px;
             }
-
             .header {
                 padding: 30px 20px;
             }
-
             .header h1 {
                 font-size: 2rem;
             }
             .header .room-notice {
                 font-size: 0.8rem;
             }
-
             .timetable {
                 padding: 30px 20px;
             }
-
             .exam-card {
                 padding: 20px;
             }
-
             .exam-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
-
             .subject {
                 font-size: 1.2rem;
             }
             .exam-details p strong {
                 min-width: 70px;
             }
-
             .stats {
                 grid-template-columns: 1fr;
             }
@@ -312,16 +315,14 @@
             .header h1 {
                 font-size: 1.8rem;
             }
-
             .exam-card {
                 padding: 15px;
             }
-
             .subject {
                 font-size: 1.1rem;
             }
             .exam-details p strong {
-                display: block; /* Stack labels above values on very small screens */
+                display: block;
                 min-width: auto;
                 margin-bottom: 2px;
             }
@@ -333,7 +334,6 @@
         <div class="header">
             <h1>📚 Exam Schedule</h1>
             <p>May - June 2025</p>
-            <!-- General Note about Room Number -->
             <p class="room-notice">
                 <strong>Room Assignment:</strong> Please check the notice board at Kalyan PG College on exam day for your specific room number.
             </p>
@@ -348,7 +348,6 @@
                     </div>
                 </div>
                 <div class="subject">Database Management System</div>
-                <!-- Exam Details Section -->
                 <div class="exam-details">
                     <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
                     <p><strong>Type:</strong> Written</p>
@@ -369,7 +368,6 @@
                     </div>
                 </div>
                 <div class="subject">Python Programming</div>
-                <!-- Exam Details Section -->
                 <div class="exam-details">
                     <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
                     <p><strong>Type:</strong> Written</p>
@@ -390,7 +388,6 @@
                     </div>
                 </div>
                 <div class="subject">Compiler Design</div>
-                <!-- Exam Details Section -->
                 <div class="exam-details">
                     <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
                     <p><strong>Type:</strong> Written</p>
@@ -411,7 +408,6 @@
                     </div>
                 </div>
                 <div class="subject">Numerical Analysis</div>
-                <!-- Exam Details Section -->
                 <div class="exam-details">
                     <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
                     <p><strong>Type:</strong> Written</p>
@@ -432,7 +428,6 @@
                     </div>
                 </div>
                 <div class="subject">Advanced Computer Design</div>
-                <!-- Exam Details Section -->
                 <div class="exam-details">
                     <p><strong>Duration:</strong> 3 hours (11:00 AM - 02:00 PM)</p>
                     <p><strong>Type:</strong> Written</p>
@@ -464,26 +459,20 @@
 
     <script>
         const examDates = [
-            // All exams start at 11:00 AM, be in room by 10:50 AM.
-            // Countdown is to 10:50 AM local time.
             { id: 'exam-1', date: new Date('2025-05-26T10:50:00'), subject: 'DBMS' },
             { id: 'exam-2', date: new Date('2025-06-02T10:50:00'), subject: 'Python' },
             { id: 'exam-3', date: new Date('2025-06-05T10:50:00'), subject: 'Compiler' },
             { id: 'exam-4', date: new Date('2025-06-09T10:50:00'), subject: 'Numerical' },
             { id: 'exam-5', date: new Date('2025-06-12T10:50:00'), subject: 'Computer Design' }
-            // You could also add the new details to this JS object if you prefer
-            // to generate the exam-details HTML dynamically, but for now, static HTML is fine.
         ];
 
-        // Function to format time units (e.g., add leading zero)
         function padZero(num) {
             return num < 10 ? '0' + num : num;
         }
 
-        // Function to calculate and format countdown string
         function getCountdownString(timeDiff) {
             if (timeDiff <= 0) {
-                return { text: 'Completed', status: 'past' }; // Changed text for clarity
+                return { text: 'Completed', status: 'past' };
             }
 
             const seconds = Math.floor((timeDiff / 1000) % 60);
@@ -495,44 +484,43 @@
             if (days > 0) {
                 countdownParts.push(`${days}d`);
             }
-            // Always show hours, minutes, seconds if time remains, even if days is 0
             countdownParts.push(`${padZero(hours)}h`);
             countdownParts.push(`${padZero(minutes)}m`);
             countdownParts.push(`${padZero(seconds)}s`);
 
             return {
                 text: countdownParts.join(' '),
-                status: days === 0 && hours < 24 && timeDiff > 0 ? 'today' : 'future' // Refined 'today' logic
+                status: days === 0 && hours < 24 && timeDiff > 0 ? 'today' : 'future'
             };
         }
 
         function updateCountdowns() {
             const now = new Date();
-            let minUpcomingTimeDiff = Infinity; // To track the time to the nearest upcoming exam
+            let minUpcomingTimeDiff = Infinity;
             let nextUpcomingExam = null;
 
             examDates.forEach((exam, index) => {
-                const timeDiff = exam.date.getTime() - now.getTime(); // Difference in milliseconds
+                const timeDiff = exam.date.getTime() - now.getTime();
                 
                 const countdownElement = document.getElementById(`countdown-${index + 1}`);
                 const examCard = document.getElementById(exam.id);
                 
                 const { text, status } = getCountdownString(timeDiff);
 
-                countdownElement.textContent = text;
-
-                // Remove previous classes
-                examCard.classList.remove('past', 'today');
-
-                // Add current status class
-                if (status === 'past') {
-                    examCard.classList.add('past');
-                } else if (status === 'today') { // 'today' means countdown is active and it's on the exam day
-                    examCard.classList.add('today');
+                if (countdownElement) {
+                     countdownElement.textContent = text;
                 }
 
-                // Update minUpcomingTimeDiff for the "Next Exam" stat
-                if (timeDiff > 0) { // Only consider upcoming exams (time to be in room)
+                if (examCard) {
+                    examCard.classList.remove('past', 'today');
+                    if (status === 'past') {
+                        examCard.classList.add('past');
+                    } else if (status === 'today') {
+                        examCard.classList.add('today');
+                    }
+                }
+                
+                if (status !== 'past') { // Only consider upcoming exams (today or future)
                     if (timeDiff < minUpcomingTimeDiff) {
                         minUpcomingTimeDiff = timeDiff;
                         nextUpcomingExam = exam;
@@ -540,19 +528,58 @@
                 }
             });
 
-            // Update next exam stat
+            // Reorder exam cards: upcoming first, then past, both sorted by date.
+            const timetableContainer = document.querySelector('.timetable');
+            const statsDiv = timetableContainer.querySelector('.stats');
+            const examCardElements = Array.from(timetableContainer.querySelectorAll('.exam-card'));
+
+            examCardElements.sort((cardA, cardB) => {
+                const examA_data = examDates.find(e => e.id === cardA.id);
+                const examB_data = examDates.find(e => e.id === cardB.id);
+
+                if (!examA_data || !examB_data) {
+                    console.warn("Could not find exam data for sorting cards:", cardA.id, cardB.id);
+                    return 0; 
+                }
+
+                const isPastA = cardA.classList.contains('past');
+                const isPastB = cardB.classList.contains('past');
+                
+                const dateA = examA_data.date;
+                const dateB = examB_data.date;
+
+                if (isPastA && !isPastB) {
+                    return 1; // A (past) comes after B (not past)
+                }
+                if (!isPastA && isPastB) {
+                    return -1; // A (not past) comes before B (past)
+                }
+                
+                // If both are 'past' or both are 'not past', sort by their original exam date
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            // Re-insert the sorted cards into the timetableContainer, before the statsDiv
+            examCardElements.forEach(card => {
+                if (statsDiv) {
+                    timetableContainer.insertBefore(card, statsDiv);
+                } else {
+                    timetableContainer.appendChild(card); // Fallback if statsDiv isn't there
+                }
+            });
+
+            // Update next exam stat (original logic)
             const nextExamElement = document.getElementById('next-exam');
             if (minUpcomingTimeDiff === Infinity || !nextUpcomingExam) {
                 nextExamElement.textContent = 'All Done!';
             } else {
-                // Calculate days for the stat (rounded up to full days until 10:50 AM)
                 const daysToNext = Math.ceil(minUpcomingTimeDiff / (1000 * 3600 * 24));
                 
                 if (daysToNext > 1) {
                      nextExamElement.textContent = `${daysToNext}d`;
-                } else if (daysToNext === 1 && (minUpcomingTimeDiff > (1000 * 3600 * (24 - (new Date().getHours()))))) { // Check if it's truly "tomorrow" vs less than 24h today
+                } else if (daysToNext === 1 && (minUpcomingTimeDiff > (1000 * 3600 * (24 - (new Date().getHours()))))) {
                      nextExamElement.textContent = `Tomorrow`;
-                } else if (daysToNext === 0 || (daysToNext ===1 && minUpcomingTimeDiff < (1000 * 3600 * 24))) { // Today
+                } else if (daysToNext === 0 || (daysToNext === 1 && minUpcomingTimeDiff < (1000 * 3600 * 24))) {
                      nextExamElement.textContent = `Today (${nextUpcomingExam.subject})`;
                 } else {
                      nextExamElement.textContent = `${daysToNext}d`; 
@@ -560,7 +587,6 @@
             }
         }
 
-        // Initialize total exams and days span
         document.getElementById('total-exams').textContent = examDates.length;
         if (examDates.length > 0) {
             const firstExamDate = examDates[0].date;
@@ -581,51 +607,13 @@
 
         document.querySelectorAll('.exam-card').forEach(card => {
             card.addEventListener('mouseenter', function() {
-                // this.style.transform = 'translateY(-8px) scale(1.02)'; 
+                // Hover effects are handled by CSS :hover pseudo-class
             });
             
             card.addEventListener('mouseleave', function() {
-                // this.style.transform = 'translateY(0) scale(1)';
+                // Hover effects are handled by CSS :hover pseudo-class
             });
         });
     </script>
-<!-- Code injected by live-server -->
-<script>
-	// <![CDATA[  <-- For SVG support
-	if ('WebSocket' in window) {
-		(function () {
-			function refreshCSS() {
-				var sheets = [].slice.call(document.getElementsByTagName("link"));
-				var head = document.getElementsByTagName("head")[0];
-				for (var i = 0; i < sheets.length; ++i) {
-					var elem = sheets[i];
-					var parent = elem.parentElement || head;
-					parent.removeChild(elem);
-					var rel = elem.rel;
-					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
-						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
-						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
-					}
-					parent.appendChild(elem);
-				}
-			}
-			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
-			var address = protocol + window.location.host + window.location.pathname + '/ws';
-			var socket = new WebSocket(address);
-			socket.onmessage = function (msg) {
-				if (msg.data == 'reload') window.location.reload();
-				else if (msg.data == 'refreshcss') refreshCSS();
-			};
-			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
-				console.log('Live reload enabled.');
-				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
-			}
-		})();
-	}
-	else {
-		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
-	}
-	// ]]>
-</script>
 </body>
 </html>
