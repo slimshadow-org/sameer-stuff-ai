@@ -483,7 +483,7 @@
         // Function to calculate and format countdown string
         function getCountdownString(timeDiff) {
             if (timeDiff <= 0) {
-                return { text: 'Completed / In Progress', status: 'past' }; // Changed text for clarity
+                return { text: 'Completed', status: 'past' }; // Changed text for clarity
             }
 
             const seconds = Math.floor((timeDiff / 1000) % 60);
