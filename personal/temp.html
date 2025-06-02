@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Timetable Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .task-card { transition: all 0.3s ease; }
+        .task-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .completed { opacity: 0.6; text-decoration: line-through; }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white p-4 shadow-lg">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-2xl md:text-3xl font-bold text-center mb-2">Personal Timetable Manager</h1>
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4 text-sm md:text-base">
+                <div class="flex items-center gap-2">
+                    <div class="pulse-dot w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span id="currentTime" class="font-mono"></span>
+                </div>
+                <div class="text-center">
+                    <span id="currentDate" class="font-medium"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 space-y-6">
+        <!-- Special Alerts -->
+        <div id="specialAlerts" class="space-y-2"></div>
+
+        <!-- Digital Device Usage -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">📱 Digital Device Usage</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="task-card bg-red-50 p-4 rounded-lg border border-red-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-red-800">YouTube</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-red-600 rounded" data-task="youtube">
+                    </div>
+                    <p class="text-sm text-red-600">25 minutes</p>
+                </div>
+                <div class="task-card bg-green-50 p-4 rounded-lg border border-green-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-green-800">WhatsApp</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-green-600 rounded" data-task="whatsapp">
+                    </div>
+                    <p class="text-sm text-green-600">15 min (∞ for work)</p>
+                </div>
+                <div class="task-card bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-blue-800">Reddit</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-blue-600 rounded" data-task="reddit">
+                    </div>
+                    <p class="text-sm text-blue-600">5 minutes</p>
+                </div>
+                <div class="task-card bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-purple-800">Twitter</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-purple-600 rounded" data-task="twitter">
+                    </div>
+                    <p class="text-sm text-purple-600">5 minutes</p>
+                </div>
+            </div>
+            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-sm text-yellow-800">
+                    ⏰ <strong>Device Time Window:</strong> 12:00 PM - 3:00 PM (Mon-Fri only)
+                </p>
+            </div>
+        </section>
+
+        <!-- Daily Career-Focused Routine -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">💼 Career-Focused Activities</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="task-card bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-indigo-800">Python + AI</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-indigo-600 rounded" data-task="python">
+                    </div>
+                    <p class="text-sm text-indigo-600">3 hours</p>
+                </div>
+                <div class="task-card bg-teal-50 p-4 rounded-lg border border-teal-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-teal-800">Algebra & Stats</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-teal-600 rounded" data-task="math">
+                    </div>
+                    <p class="text-sm text-teal-600">1 hour</p>
+                </div>
+                <div class="task-card bg-orange-50 p-4 rounded-lg border border-orange-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-orange-800">College Projects</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-orange-600 rounded" data-task="projects">
+                    </div>
+                    <p class="text-sm text-orange-600">2 hours</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Health & Wellness -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">🏃‍♂️ Health & Wellness</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="task-card bg-pink-50 p-4 rounded-lg border border-pink-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-pink-800">Morning Workout</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-pink-600 rounded" data-task="morning-workout">
+                    </div>
+                    <p class="text-sm text-pink-600">30 minutes</p>
+                </div>
+                <div class="task-card bg-cyan-50 p-4 rounded-lg border border-cyan-200" id="sudoku-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-cyan-800">Sudoku + News</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-cyan-600 rounded" data-task="sudoku">
+                    </div>
+                    <p class="text-sm text-cyan-600">15-20 minutes</p>
+                </div>
+                <div class="task-card bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-emerald-800">Evening Resistance</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-emerald-600 rounded" data-task="evening-workout">
+                    </div>
+                    <p class="text-sm text-emerald-600">30 minutes</p>
+                </div>
+                <div class="task-card bg-violet-50 p-4 rounded-lg border border-violet-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-violet-800">Post-dinner Walk</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-violet-600 rounded" data-task="walk">
+                    </div>
+                    <p class="text-sm text-violet-600">15 min (~3km)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weekly Schedule -->
+        <section class="bg-white rounded-lg shadow-md p-6" id="weeklySchedule">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">📅 Weekly Schedule</h2>
+            <div id="scheduleContainer" class="space-y-4"></div>
+        </section>
+
+        <!-- Weekend Activities -->
+        <section class="bg-white rounded-lg shadow-md p-6" id="weekendSection" style="display: none;">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">🎯 Weekend Activities</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="task-card bg-gray-50 p-4 rounded-lg border border-gray-200" id="saturday-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-gray-800">Saturday Reflection</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="reflection">
+                    </div>
+                    <p class="text-sm text-gray-600">Journal & reflect on week</p>
+                </div>
+                <div class="task-card bg-red-50 p-4 rounded-lg border border-red-200" id="sunday-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-red-800">Sunday Netflix</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-red-600 rounded" data-task="netflix">
+                    </div>
+                    <p class="text-sm text-red-600">1 hour entertainment</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Schedule -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">⏰ Today's Schedule</h2>
+            <div class="space-y-3" id="dailySchedule">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">Wake up</span>
+                        <span class="text-sm text-gray-600 ml-2">8:30 AM</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="wakeup">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">Breakfast</span>
+                        <span class="text-sm text-gray-600 ml-2">9:30 - 10:00 AM</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="breakfast">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">Study (Maths)</span>
+                        <span class="text-sm text-gray-600 ml-2">After breakfast</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="study-math">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">Python Practice</span>
+                        <span class="text-sm text-gray-600 ml-2">Until 4:00-4:30 PM</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="python-practice">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">Evening Workout</span>
+                        <span class="text-sm text-gray-600 ml-2">After Python</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="evening-workout-schedule">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">College Projects</span>
+                        <span class="text-sm text-gray-600 ml-2">After workout</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="college-projects">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">Dinner</span>
+                        <span class="text-sm text-gray-600 ml-2">Evening</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="dinner">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-gray-800">Post-dinner Walk</span>
+                        <span class="text-sm text-gray-600 ml-2">After dinner</span>
+                    </div>
+                    <input type="checkbox" class="task-checkbox w-5 h-5 text-gray-600 rounded" data-task="dinner-walk">
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Summary -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">📊 Today's Progress</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600" id="totalTasks">0</div>
+                    <div class="text-sm text-blue-600">Total Tasks</div>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600" id="completedTasks">0</div>
+                    <div class="text-sm text-green-600">Completed</div>
+                </div>
+                <div class="text-center p-4 bg-orange-50 rounded-lg">
+                    <div class="text-2xl font-bold text-orange-600" id="pendingTasks">0</div>
+                    <div class="text-sm text-orange-600">Pending</div>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <div class="text-2xl font-bold text-purple-600" id="progressPercent">0%</div>
+                    <div class="text-sm text-purple-600">Progress</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-100 p-4 mt-8">
+        <div class="max-w-6xl mx-auto text-center text-gray-600 text-sm">
+            <p>Stay consistent, stay focused! 🚀</p>
+        </div>
+    </footer>
+
+    <script>
+        // Date and time management
+        function updateDateTime() {
+            const now = new Date();
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: true 
+            };
+            const dateOptions = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', timeOptions);
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', dateOptions);
+        }
+
+        // Check for special dates and rules
+        function checkSpecialRules() {
+            const now = new Date();
+            const day = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            const date = now.getDate();
+            const alertsContainer = document.getElementById('specialAlerts');
+            alertsContainer.innerHTML = '';
+
+            // Check for third Sunday of the month (junk food day)
+            if (day === 0) {
+                const firstSundayDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                while (firstSundayDate.getDay() !== 0) {
+                    firstSundayDate.setDate(firstSundayDate.getDate() + 1);
+                }
+                const thirdSundayDate = new Date(firstSundayDate);
+                thirdSundayDate.setDate(thirdSundayDate.getDate() + 14);
+                
+                if (date === thirdSundayDate.getDate()) {
+                    alertsContainer.innerHTML += `
+                        <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 p-4 rounded-lg">
+                            🍕 <strong>Special Day:</strong> Today is the 3rd Sunday of the month - Junk food is allowed!
+                        </div>
+                    `;
+                }
+            }
+
+            // Saturday offline reminder
+            if (day === 6) {
+                alertsContainer.innerHTML += `
+                    <div class="bg-red-100 border border-red-400 text-red-800 p-4 rounded-lg">
+                        📵 <strong>Saturday Offline Day:</strong> No phone usage today - Stay disconnected!
+                    </div>
+                `;
+            }
+
+            // Monday newspaper reminder
+            if (day === 1) {
+                const sudokuCard = document.getElementById('sudoku-card');
+                sudokuCard.classList.add('opacity-50');
+                sudokuCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-cyan-800">Sudoku Only</span>
+                        <input type="checkbox" class="task-checkbox w-5 h-5 text-cyan-600 rounded" data-task="sudoku">
+                    </div>
+                    <p class="text-sm text-cyan-600">No newspaper today</p>
+                `;
+                
+                alertsContainer.innerHTML += `
+                    <div class="bg-blue-100 border border-blue-400 text-blue-800 p-4 rounded-lg">
+                        📰 <strong>Monday Rule:</strong> Skip the newspaper today to avoid negative news!
+                    </div>
+                `;
+            }
+
+            // Digital device time window
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const currentTime = hour * 60 + minute;
+            const windowStart = 12 * 60; // 12:00 PM
+            const windowEnd = 15 * 60;   // 3:00 PM
+            
+            if (day >= 1 && day <= 5) { // Monday to Friday
+                if (currentTime >= windowStart && currentTime <= windowEnd) {
+                    alertsContainer.innerHTML += `
+                        <div class="bg-green-100 border border-green-400 text-green-800 p-4 rounded-lg">
+                            📱 <strong>Device Time Active:</strong> You can use digital devices now (until 3:00 PM)
+                        </div>
+                    `;
+                } else {
+                    alertsContainer.innerHTML += `
+                        <div class="bg-gray-100 border border-gray-400 text-gray-800 p-4 rounded-lg">
+                            🚫 <strong>Device Time Inactive:</strong> Digital devices allowed only 12:00 PM - 3:00 PM
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Show/hide weekend sections based on current day
+        function updateWeeklyDisplay() {
+            const now = new Date();
+            const day = now.getDay();
+            const weekendSection = document.getElementById('weekendSection');
+            
+            if (day === 0 || day === 6) { // Sunday or Saturday
+                weekendSection.style.display = 'block';
+            } else {
+                weekendSection.style.display = 'none';
+            }
+        }
+
+        // Task completion tracking
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            const totalTasks = checkboxes.length;
+            const completedTasks = document.querySelectorAll('.task-checkbox:checked').length;
+            const pendingTasks = totalTasks - completedTasks;
+            const progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100).toFixed(0) : 0;
+
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            document.getElementById('pendingTasks').textContent = pendingTasks;
+            document.getElementById('progressPercent').textContent = progressPercent + '%';
+        }
+
+        // Save task states to memory
+        let taskStates = {};
+
+        function saveTaskState(taskId, isChecked) {
+            taskStates[taskId] = isChecked;
+        }
+
+        function loadTaskStates() {
+            Object.keys(taskStates).forEach(taskId => {
+                const checkbox = document.querySelector(`[data-task="${taskId}"]`);
+                if (checkbox) {
+                    checkbox.checked = taskStates[taskId];
+                    updateTaskAppearance(checkbox);
+                }
+            });
+        }
+
+        function updateTaskAppearance(checkbox) {
+            const taskCard = checkbox.closest('.task-card') || checkbox.closest('.flex');
+            const taskText = taskCard.querySelector('span');
+            
+            if (checkbox.checked) {
+                taskCard.classList.add('completed');
+            } else {
+                taskCard.classList.remove('completed');
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            checkSpecialRules();
+            updateWeeklyDisplay();
+            updateProgress();
+            
+            // Update time every second
+            setInterval(updateDateTime, 1000);
+            
+            // Check special rules every minute
+            setInterval(checkSpecialRules, 60000);
+
+            // Add event listeners to all checkboxes
+            document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const taskId = this.getAttribute('data-task');
+                    saveTaskState(taskId, this.checked);
+                    updateTaskAppearance(this);
+                    updateProgress();
+                });
+            });
+
+            // Load saved states
+            loadTaskStates();
+        });
+    </script>
+</body>
+</html>

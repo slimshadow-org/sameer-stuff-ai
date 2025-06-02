@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Timetable</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for better aesthetics */
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: #cbd5e0; /* light gray-300 */
+            border-radius: 4px;
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0; /* light gray-500 */
+        }
+
+        /* Task completion styling */
+        .task-completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        /* Hide elements by default, controlled by JS */
+        .hide-on-weekday {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen text-gray-800 font-sans p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8 md:p-10 mb-8 relative">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-indigo-700 mb-4">My Personal Timetable</h1>
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 text-gray-600 text-sm sm:text-base">
+            <div id="currentDateTime" class="font-semibold text-center sm:text-left mb-2 sm:mb-0"></div>
+            <div id="dayOfWeek" class="font-bold text-lg text-indigo-600 text-center sm:text-right"></div>
+        </div>
+
+        <!-- Monthly Rule Section -->
+        <div id="monthlyRule" class="bg-purple-100 border-l-4 border-purple-500 text-purple-700 p-3 mb-6 rounded-md hidden">
+            <p class="font-semibold">Special Monthly Rule Today:</p>
+            <p>🥳 It's the 3rd Sunday of the month! You are allowed to eat junk food today!</p>
+        </div>
+
+        <!-- Digital Device Usage Rules -->
+        <div id="digitalDeviceRules" class="mb-8">
+            <h2 class="text-xl sm:text-2xl font-semibold text-indigo-600 mb-3 border-b pb-2 border-indigo-200">Digital Device Usage (Phone Time)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm sm:text-base">
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <h3 class="font-semibold text-gray-700 mb-2">Weekday Rules (Mon-Fri)</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li><span class="font-medium">YouTube:</span> 25 minutes</li>
+                        <li><span class="font-medium">WhatsApp:</span> 15 minutes (unlimited for work)</li>
+                        <li><span class="font-medium">Reddit:</span> 5 minutes</li>
+                        <li><span class="font-medium">Twitter:</span> 5 minutes</li>
+                        <li><span class="font-semibold text-red-600">Allowed Time:</span> 12:00 PM - 3:00 PM Only</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <h3 class="font-semibold text-gray-700 mb-2">Weekend Rules</h3>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li><span class="font-medium text-red-600">Saturday:</span> Completely offline (No phone usage)</li>
+                        <li><span class="font-medium">Sunday:</span> 1 hour for Netflix or any web series</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Schedule Sections -->
+        <div id="dailySchedule" class="space-y-8">
+            <!-- Career-Focused Routine -->
+            <div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-green-600 mb-3 border-b pb-2 border-green-200">Daily Career-Focused Routine</h2>
+                <ul class="space-y-2 text-sm sm:text-base" id="careerTasks">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+
+            <!-- Health & Wellness Activities -->
+            <div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-red-600 mb-3 border-b pb-2 border-red-200">Daily Health & Wellness Activities</h2>
+                <ul class="space-y-2 text-sm sm:text-base" id="healthTasks">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+
+            <!-- Reading -->
+            <div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-purple-600 mb-3 border-b pb-2 border-purple-200">Reading</h2>
+                <ul class="space-y-2 text-sm sm:text-base" id="readingTasks">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+
+            <!-- Weekly Reflection (Saturday Only) -->
+            <div id="weeklyReflection" class="hide-on-weekday">
+                <h2 class="text-xl sm:text-2xl font-semibold text-blue-600 mb-3 border-b pb-2 border-blue-200">Weekly Reflection (Saturday)</h2>
+                <ul class="space-y-2 text-sm sm:text-base" id="reflectionTasks">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+
+            <!-- Rough Daily Schedule (Current) -->
+            <div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-yellow-600 mb-3 border-b pb-2 border-yellow-200">Rough Daily Schedule (Current)</h2>
+                <ul class="space-y-2 text-sm sm:text-base" id="roughSchedule">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center text-gray-500 text-xs mt-8">
+        © <span id="currentYear"></span> My Timetable Manager. All rights reserved.
+    </footer>
+
+    <script>
+        const currentYearSpan = document.getElementById('currentYear');
+        currentYearSpan.textContent = new Date().getFullYear();
+
+        const careerTasksList = document.getElementById('careerTasks');
+        const healthTasksList = document.getElementById('healthTasks');
+        const readingTasksList = document.getElementById('readingTasks');
+        const reflectionTasksList = document.getElementById('reflectionTasks');
+        const roughScheduleList = document.getElementById('roughSchedule');
+        const weeklyReflectionSection = document.getElementById('weeklyReflection');
+        const monthlyRuleDiv = document.getElementById('monthlyRule');
+
+        const tasks = {
+            career: [
+                "3 hours: Python programming with AI",
+                "1 hour: Algebra and Statistics",
+                "2 hours: College projects and other academic tasks"
+            ],
+            health: [
+                "Morning workout: 30 minutes",
+                "Sudoku: 15–20 minutes while reading the newspaper (except Mondays)",
+                "Evening resistance workout: 30 minutes",
+                "Post-dinner walk: 15 minutes (approx. 3 km)"
+            ],
+            reading: [
+                "Novels and articles can be read as needed."
+            ],
+            reflection: [
+                "Journal your weekly routine",
+                "Reflect on: Decisions",
+                "Reflect on: Relationships",
+                "Reflect on: Health",
+                "Reflect on: Mindfulness",
+                "Reflect on: Productivity"
+            ],
+            rough: [
+                "Wake up: 8:30 AM",
+                "Breakfast: 9:30 – 10:00 AM",
+                "Study (Maths): After breakfast",
+                "Break / Relaxation",
+                "Python Practice: Until around 4:00–4:30 PM",
+                "Workout (Evening)",
+                "College Projects / Study",
+                "Dinner",
+                "Post-dinner Walk",
+                "Sleep"
+            ]
+        };
+
+        // Function to create a task item with a checkbox
+        function createTaskItem(taskText, category, index) {
+            const li = document.createElement('li');
+            li.className = 'flex items-start bg-gray-50 p-3 rounded-md shadow-sm';
+
+            const checkboxId = `${category}-${index}`;
+            const storedChecked = localStorage.getItem(checkboxId) === 'true';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = checkboxId;
+            checkbox.className = 'mr-3 mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded';
+            checkbox.checked = storedChecked;
+
+            const label = document.createElement('label');
+            label.htmlFor = checkboxId;
+            label.textContent = taskText;
+            label.className = `flex-1 ${storedChecked ? 'task-completed' : ''}`;
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    label.classList.add('task-completed');
+                    localStorage.setItem(checkboxId, 'true');
+                } else {
+                    label.classList.remove('task-completed');
+                    localStorage.removeItem(checkboxId); // Or set to 'false' if you prefer to store all
+                }
+            });
+
+            li.appendChild(checkbox);
+            li.appendChild(label);
+            return li;
+        }
+
+        // Populate tasks
+        function populateTasks(day) {
+            careerTasksList.innerHTML = '';
+            healthTasksList.innerHTML = '';
+            readingTasksList.innerHTML = '';
+            reflectionTasksList.innerHTML = '';
+            roughScheduleList.innerHTML = '';
+
+            // Career tasks
+            tasks.career.forEach((task, index) => {
+                careerTasksList.appendChild(createTaskItem(task, 'career', index));
+            });
+
+            // Health tasks - special rule for Monday Sudoku
+            tasks.health.forEach((task, index) => {
+                let displayTask = task;
+                if (day === 1 && task.includes('Sudoku')) { // Monday is 1
+                    displayTask = "Sudoku: (Avoid newspaper on Mondays)";
+                }
+                healthTasksList.appendChild(createTaskItem(displayTask, 'health', index));
+            });
+
+            // Reading tasks
+            tasks.reading.forEach((task, index) => {
+                readingTasksList.appendChild(createTaskItem(task, 'reading', index));
+            });
+
+            // Rough schedule
+            tasks.rough.forEach((task, index) => {
+                roughScheduleList.appendChild(createTaskItem(task, 'rough', index));
+            });
+
+            // Weekly reflection (Saturday only)
+            if (day === 6) { // Saturday is 6
+                weeklyReflectionSection.classList.remove('hide-on-weekday');
+                tasks.reflection.forEach((task, index) => {
+                    reflectionTasksList.appendChild(createTaskItem(task, 'reflection', index));
+                });
+            } else {
+                weeklyReflectionSection.classList.add('hide-on-weekday');
+            }
+        }
+
+        // Function to check if it's the 3rd Sunday of the month
+        function isThirdSunday(date) {
+            const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
+            const dayOfMonth = date.getDate();
+
+            if (dayOfWeek === 0) { // It's a Sunday
+                // Check if it's the 3rd Sunday
+                // 1st Sunday: 1-7, 2nd: 8-14, 3rd: 15-21, 4th: 22-28, 5th: 29-31
+                if (dayOfMonth >= 15 && dayOfMonth <= 21) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Update Date and Time
+        function updateDateTime() {
+            const now = new Date();
+            const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+
+            document.getElementById('currentDateTime').textContent =
+                `Date: ${now.toLocaleDateString('en-US', optionsDate)} | Time: ${now.toLocaleTimeString('en-US', optionsTime)}`;
+
+            const day = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+            // Display day of week
+            const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            document.getElementById('dayOfWeek').textContent = `Today is: ${dayNames[day]}`;
+
+            // Hide weekend events unless it's the weekend
+            const scheduleSections = document.querySelectorAll('#dailySchedule > div');
+            scheduleSections.forEach(section => {
+                const sectionId = section.id;
+                // Only hide sections that are not the reflection, as reflection is explicitly hidden on weekdays
+                if (day >= 1 && day <= 5) { // Weekday (Monday to Friday)
+                     // Digital device rules are always shown but context might change
+                     // Monthly rule hidden on weekdays
+                     monthlyRuleDiv.classList.add('hidden');
+                } else { // Weekend (Saturday or Sunday)
+                     // Monthly rule visible on Sundays only
+                     monthlyRuleDiv.classList.add('hidden'); // Default hide
+                }
+            });
+
+            // Check for monthly rule
+            if (isThirdSunday(now)) {
+                monthlyRuleDiv.classList.remove('hidden');
+            } else {
+                monthlyRuleDiv.classList.add('hidden');
+            }
+
+            populateTasks(day); // Re-populate tasks based on the current day
+        }
+
+        // Initial call and set interval for updates
+        updateDateTime();
+        setInterval(updateDateTime, 1000); // Update every second
+
+        // Load tasks from local storage on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // This is handled by createTaskItem which checks local storage
+            // but we need to re-render it if the day changes, so we call populateTasks again
+            updateDateTime();
+        });
+
+    </script>
+</body>
+</html>

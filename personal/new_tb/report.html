@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Activity Report</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --primary-color: #1a73e8;
+            --accent-color: #4caf50;
+            --warn-color: #ff9800;
+            --error-color: #f44336;
+            --surface-color: #ffffff;
+            --background-color: #f8f9fa;
+            --on-surface-color: #202124;
+            --on-surface-variant: #5f6368;
+            --elevation-1: 0 1px 2px rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--on-surface-color);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--elevation-1);
+        }
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { border-bottom: 2px solid var(--primary-color); padding-bottom: 0.3em; }
+        h2 { border-bottom: 1px solid #eee; padding-bottom: 0.2em; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 500;
+        }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .file-input-area, .date-selector-area, .report-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        label { font-weight: 500; margin-right: 10px; }
+        input[type="file"], select, button {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            font-family: 'Roboto', sans-serif;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: var(--primary-dark, #1557b0); }
+
+        .status-completed { color: var(--accent-color); font-weight: bold; }
+        .status-pending { color: var(--warn-color); }
+        .status-missed { color: var(--error-color); }
+        .adherence-ontime { color: var(--accent-color); }
+        .adherence-late { color: var(--warn-color); }
+        .adherence-early-finish { color: #6c757d; } /* Bootstrap text-muted like */
+        .adherence-overran { color: var(--error-color); }
+        
+        .log-details { font-size: 0.8em; color: var(--on-surface-variant); white-space: pre-wrap; max-height: 100px; overflow-y: auto; }
+        .summary-card {
+            background-color: #e9f5fe;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .summary-card p { margin: 5px 0; }
+
+        details {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        summary {
+            font-weight: 500;
+            padding: 10px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            list-style: none; /* Remove default triangle */
+        }
+        summary::-webkit-details-marker { display: none; } /* Chrome/Safari */
+        summary::before {
+            content: '► '; /* Collapsed state */
+            margin-right: 5px;
+        }
+        details[open] summary::before {
+            content: '▼ '; /* Expanded state */
+        }
+        .details-content { padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Timetable Activity Report</h1>
+
+        <div class="file-input-area">
+            <label for="importDataInput">Load Exported Data (JSON):</label>
+            <input type="file" id="importDataInput" accept=".json">
+        </div>
+
+        <div class="date-selector-area" id="dateSelectorSection" style="display:none;">
+            <label for="dateSelector">Select Date for Detailed Report:</label>
+            <select id="dateSelector"></select>
+            <button id="generateReportButton">Generate/Update Report</button>
+        </div>
+
+        <div id="reportOutput">
+            <p>Please upload your exported data file to generate a report.</p>
+        </div>
+    </div>
+
+<script>
+    let loadedData = null;
+    let processedSchedule = null; // Holds the fully processed schedule (like index.html's dailySchedule)
+
+    const importDataInput = document.getElementById('importDataInput');
+    const dateSelectorSection = document.getElementById('dateSelectorSection');
+    const dateSelector = document.getElementById('dateSelector');
+    const generateReportButton = document.getElementById('generateReportButton');
+    const reportOutput = document.getElementById('reportOutput');
+
+    importDataInput.addEventListener('change', handleFileUpload);
+    generateReportButton.addEventListener('click', displayReport);
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                loadedData = JSON.parse(e.target.result);
+                if (!loadedData.schedule || !loadedData.activityLogArchive) {
+                    throw new Error("Imported data is missing 'schedule' or 'activityLogArchive'.");
+                }
+                // Process the raw schedule to be usable for lookups
+                processedSchedule = processRawScheduleForReport(loadedData.schedule);
+                
+                populateDateSelector();
+                dateSelectorSection.style.display = 'block';
+                reportOutput.innerHTML = '<p>Data loaded. Select a date and click "Generate/Update Report".</p>';
+            } catch (err) {
+                console.error("Error processing uploaded file:", err);
+                reportOutput.innerHTML = `<p style="color:red;">Error loading data: ${err.message}</p>`;
+                loadedData = null;
+                processedSchedule = null;
+                dateSelectorSection.style.display = 'none';
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function populateDateSelector() {
+        dateSelector.innerHTML = ''; // Clear existing options
+        if (!loadedData || !loadedData.activityLogArchive) return;
+
+        const dates = Object.keys(loadedData.activityLogArchive).sort((a,b) => new Date(b) - new Date(a)); // Sort newest first
+        if (dates.length === 0) {
+            reportOutput.innerHTML = '<p>No activity logs found in the uploaded file.</p>';
+            dateSelectorSection.style.display = 'none';
+            return;
+        }
+        dates.forEach(dateStr => {
+            const option = document.createElement('option');
+            option.value = dateStr;
+            option.textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            dateSelector.appendChild(option);
+        });
+    }
+
+    function processRawScheduleForReport(rawSchedule) {
+        const processed = {};
+        const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+        // First pass: Process days that are not "Same as..."
+        dayOrder.forEach(day => {
+            if (typeof rawSchedule[day] === 'string' && rawSchedule[day].startsWith("Same as ")) {
+                return; 
+            }
+            if (!rawSchedule[day] || !Array.isArray(rawSchedule[day])) {
+                processed[day] = []; return;
+            }
+            processed[day] = rawSchedule[day].map((task, index) => ({
+                ...JSON.parse(JSON.stringify(task)),
+                id: `${day.toLowerCase().substring(0,3)}_${index}_${task.task.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10)}`,
+            }));
+        });
+
+        // Second pass: Resolve "Same as..." references
+        dayOrder.forEach(day => {
+            if (typeof rawSchedule[day] === 'string' && rawSchedule[day].startsWith("Same as ")) {
+                const templateDayName = rawSchedule[day].split("Same as ")[1];
+                if (processed[templateDayName]) {
+                    processed[day] = processed[templateDayName].map((templateTask, index) => ({
+                        ...JSON.parse(JSON.stringify(templateTask)),
+                        id: `${day.toLowerCase().substring(0,3)}_${index}_${templateTask.task.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10)}`,
+                    }));
+                } else {
+                    processed[day] = [];
+                }
+            }
+        });
+        return processed;
+    }
+
+    function getDayOfWeekName(dateString) { // "YYYY-MM-DD"
+        const date = new Date(dateString + 'T00:00:00'); // Ensure local timezone interpretation
+        return date.toLocaleDateString('en-US', { weekday: 'long' });
+    }
+    
+    function parseTimeToMinutes(timeStr) { // "HH:MM"
+        if (!timeStr || typeof timeStr !== 'string' || !timeStr.includes(':')) return null;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+    function formatDuration(ms, precise = false) {
+        if (ms === null || typeof ms === 'undefined') return 'N/A';
+        if (ms < 0) ms = 0;
+        let seconds = Math.floor(ms / 1000);
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+        seconds %= 60;
+        minutes %= 60;
+        if (precise) {
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+        if (minutes > 0) return `${minutes}m ${seconds}s`;
+        return `${seconds}s`;
+    }
+
+    function displayReport() {
+        if (!loadedData || !processedSchedule) {
+            reportOutput.innerHTML = '<p>No data loaded. Please upload a file first.</p>';
+            return;
+        }
+        const selectedDate = dateSelector.value;
+        if (!selectedDate) {
+            reportOutput.innerHTML = '<p>Please select a date.</p>';
+            return;
+        }
+
+        let html = `<h2>Report for ${new Date(selectedDate+'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h2>`;
+        
+        html += displayDailyDetailedReport(selectedDate);
+        html += displayOverallSummary(); // Display overall summary always, or only if no date selected? For now, always.
+
+        reportOutput.innerHTML = html;
+    }
+
+    function displayDailyDetailedReport(dateString) {
+        const dayOfWeek = getDayOfWeekName(dateString);
+        const scheduleForDay = processedSchedule[dayOfWeek] || [];
+        const activityLogForDay = loadedData.activityLogArchive[dateString] || [];
+        
+        let dailyHtml = '<h3>Daily Schedule vs. Actuals</h3>';
+        if (scheduleForDay.length === 0) {
+            dailyHtml += '<p>No schedule defined for this day.</p>';
+        }
+
+        const taskAnalysis = {}; // Store analyzed data for each task ID
+
+        // Correlate logs with tasks
+        activityLogForDay.forEach(log => {
+            if (!log.taskId) return; // Skip logs not tied to a specific task
+            if (!taskAnalysis[log.taskId]) {
+                taskAnalysis[log.taskId] = {
+                    logs: [],
+                    started: null,
+                    stopped: null,
+                    completed: false,
+                    actualDurationMs: null
+                };
+            }
+            taskAnalysis[log.taskId].logs.push(log);
+
+            if (log.eventType === 'timer_started' && !taskAnalysis[log.taskId].started) { // Take first start
+                taskAnalysis[log.taskId].started = new Date(log.details.startTimeISO);
+            }
+            if (log.eventType.startsWith('timer_stopped_')) {
+                taskAnalysis[log.taskId].stopped = new Date(log.details.endTimeISO);
+                // Prefer actualDurationMs from log if available, as it's calculated by index.html
+                taskAnalysis[log.taskId].actualDurationMs = log.details.actualDurationMs;
+            }
+            if (log.eventType === 'task_completed_manual_check' || log.eventType === 'task_auto_completed_time_passed') {
+                taskAnalysis[log.taskId].completed = true;
+            }
+             if (log.eventType === 'task_uncompleted_manual_uncheck') {
+                taskAnalysis[log.taskId].completed = false;
+            }
+        });
+
+        // Calculate duration if not explicitly in stop log (e.g. manual stop, or if stop log missed it)
+        for (const taskId in taskAnalysis) {
+            const taskAn = taskAnalysis[taskId];
+            if (taskAn.started && taskAn.stopped && taskAn.actualDurationMs === null) {
+                taskAn.actualDurationMs = taskAn.stopped.getTime() - taskAn.started.getTime();
+            }
+        }
+
+        let tableHtml = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Scheduled Time</th>
+                        <th>Sch. Duration</th>
+                        <th>Actual Start</th>
+                        <th>Actual End</th>
+                        <th>Actual Duration</th>
+                        <th>Status & Adherence</th>
+                        <th>Logged Events</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        const dailyTimeByCategory = {};
+        let scheduledTasksWithDurationCount = 0;
+        let completedTasksWithDurationCount = 0;
+
+        scheduleForDay.forEach(task => {
+            if (task.isHeader) {
+                tableHtml += `<tr><td colspan="8" style="font-weight:bold; background-color:#eee;">${task.task}</td></tr>`;
+                return;
+            }
+
+            const analysis = taskAnalysis[task.id] || { logs: [], completed: false };
+            let statusText = '';
+            let adherenceText = '';
+
+            const scheduledStartTime = task.time && task.time !== "Flexible" ? parseTimeToMinutes(task.time) : null;
+            const scheduledDurationMin = task.duration || null;
+            
+            if (scheduledDurationMin) scheduledTasksWithDurationCount++;
+
+
+            // Actuals
+            const actualStartTime = analysis.started ? analysis.started : null;
+            const actualEndTime = analysis.stopped ? analysis.stopped : null;
+            let actualDurationDisplay = analysis.actualDurationMs !== null ? formatDuration(analysis.actualDurationMs) : 'N/A';
+            
+            // Completion Status
+            if (analysis.completed) {
+                statusText = '<span class="status-completed">Completed</span>';
+                if (scheduledDurationMin) completedTasksWithDurationCount++;
+            } else if (actualStartTime && !actualEndTime && scheduledDurationMin) { // Started but not finished
+                statusText = '<span class="status-pending">In Progress? (No Stop Log)</span>';
+            } else if (!actualStartTime && scheduledDurationMin) { // Not started
+                 statusText = '<span class="status-missed">Not Started/Tracked</span>';
+            } else if (!scheduledDurationMin) { // For tasks without duration (e.g. wake up)
+                statusText = analysis.completed ? '<span class="status-completed">Done</span>' : 'Untracked Completion';
+            }
+
+
+            // Adherence for timed tasks
+            if (scheduledStartTime !== null && actualStartTime && scheduledDurationMin) {
+                const actualStartMinutes = actualStartTime.getHours() * 60 + actualStartTime.getMinutes();
+                const diffStart = actualStartMinutes - scheduledStartTime;
+                if (diffStart <= 5 && diffStart >= -5) adherenceText += '<span class="adherence-ontime">On Time. </span>';
+                else if (diffStart > 5) adherenceText += `<span class="adherence-late">Started ${diffStart}m late. </span>`;
+                else adherenceText += `<span>Started ${-diffStart}m early. </span>`;
+
+                if (analysis.actualDurationMs !== null) {
+                    const diffDuration = (analysis.actualDurationMs / 60000) - scheduledDurationMin;
+                    if (diffDuration > 5) adherenceText += `<span class="adherence-overran">Overran by ${Math.round(diffDuration)}m.</span>`;
+                    else if (diffDuration < -5) adherenceText += `<span class="adherence-early-finish">Finished ${Math.round(-diffDuration)}m early.</span>`;
+                }
+            } else if (scheduledDurationMin && !actualStartTime) {
+                 adherenceText = '<span class="status-missed">Missed/Not Tracked</span>';
+            }
+
+
+            // Log actual time for category summary
+            if (task.category && analysis.actualDurationMs > 0) {
+                if (!dailyTimeByCategory[task.category]) dailyTimeByCategory[task.category] = 0;
+                dailyTimeByCategory[task.category] += analysis.actualDurationMs;
+            }
+
+
+            tableHtml += `
+                <tr>
+                    <td>${task.task}${task.notes ? ` <em>(${task.notes})</em>` : ''}</td>
+                    <td>${task.time || 'Flexible'} ${task.endTime ? ` - ${task.endTime}`: ''}</td>
+                    <td>${task.duration ? `${task.duration} min` : 'N/A'}</td>
+                    <td>${actualStartTime ? actualStartTime.toLocaleTimeString() : 'N/A'}</td>
+                    <td>${actualEndTime ? actualEndTime.toLocaleTimeString() : 'N/A'}</td>
+                    <td>${actualDurationDisplay}</td>
+                    <td>${statusText}<br>${adherenceText || ''}</td>
+                    <td>
+                        ${analysis.logs.length > 0 ? `<details><summary>${analysis.logs.length} events</summary><div class="log-details">${analysis.logs.map(l => `${new Date(l.timestamp).toLocaleTimeString()}: ${l.eventType} (${l.taskName || 'N/A'})`).join('\n')}</div></details>` : 'No specific logs'}
+                    </td>
+                </tr>
+            `;
+        });
+        tableHtml += '</tbody></table>';
+        dailyHtml += tableHtml;
+
+        // Unmatched log entries (those not directly tied to a scheduled task or with no task.id)
+        const unmatchedLogs = activityLogForDay.filter(log => !log.taskId || !scheduleForDay.find(t => t.id === log.taskId && !t.isHeader));
+        if (unmatchedLogs.length > 0) {
+            dailyHtml += '<h3>Other Logged Activity (Not directly matched to a schedule item above)</h3><ul>';
+            unmatchedLogs.forEach(log => {
+                dailyHtml += `<li>${new Date(log.timestamp).toLocaleTimeString()}: ${log.eventType} - ${log.taskName || ''} ${log.details && log.details.message ? `(${log.details.message})` : ''}</li>`;
+            });
+            dailyHtml += '</ul>';
+        }
+        
+        // Daily Time by Category Summary
+        dailyHtml += '<h3>Daily Time Spent by Category (Tracked Tasks)</h3>';
+        if (Object.keys(dailyTimeByCategory).length > 0) {
+            dailyHtml += '<ul>';
+            for (const category in dailyTimeByCategory) {
+                dailyHtml += `<li><strong>${category}:</strong> ${formatDuration(dailyTimeByCategory[category])}</li>`;
+            }
+            dailyHtml += '</ul>';
+        } else {
+            dailyHtml += '<p>No categorized time tracked for this day.</p>';
+        }
+
+        // Daily Completion Summary
+        dailyHtml += '<h3>Daily Completion Summary (for tasks with scheduled duration)</h3>';
+        if (scheduledTasksWithDurationCount > 0) {
+            const completionRate = (completedTasksWithDurationCount / scheduledTasksWithDurationCount * 100).toFixed(1);
+            dailyHtml += `<p class="summary-card">Scheduled tasks with duration: ${scheduledTasksWithDurationCount}<br>
+                          Completed tasks with duration: ${completedTasksWithDurationCount}<br>
+                          Completion Rate: <strong>${completionRate}%</strong></p>`;
+        } else {
+            dailyHtml += '<p>No tasks with scheduled duration for this day to calculate completion rate.</p>';
+        }
+
+
+        return dailyHtml;
+    }
+
+    function displayOverallSummary() {
+        if (!loadedData || !loadedData.activityLogArchive) return '';
+
+        let summaryHtml = '<h2>Overall Summary (Across All Loaded Days)</h2>';
+        
+        const overallTimeByCategory = {};
+        const eventTypeCounts = {};
+        let totalScheduledTasksWithDuration = 0;
+        let totalCompletedTasksWithDuration = 0;
+        const uniqueLoggedDays = Object.keys(loadedData.activityLogArchive);
+
+        uniqueLoggedDays.forEach(dateString => {
+            const dayOfWeek = getDayOfWeekName(dateString);
+            const scheduleForDay = processedSchedule[dayOfWeek] || [];
+            const activityLogForDay = loadedData.activityLogArchive[dateString] || [];
+
+            const dailyTaskAnalysis = {}; // Simplified analysis for aggregation
+
+            scheduleForDay.forEach(task => {
+                if (task.duration && !task.isHeader) totalScheduledTasksWithDuration++;
+            });
+            
+            activityLogForDay.forEach(log => {
+                // Event Type Counts
+                eventTypeCounts[log.eventType] = (eventTypeCounts[log.eventType] || 0) + 1;
+
+                // Task specific aggregation
+                if (log.taskId) {
+                    if (!dailyTaskAnalysis[log.taskId]) {
+                        dailyTaskAnalysis[log.taskId] = { completed: false, actualDurationMs: 0, category: null };
+                        // Find original task category from processedSchedule
+                        const originalTask = scheduleForDay.find(t => t.id === log.taskId);
+                        if (originalTask) dailyTaskAnalysis[log.taskId].category = originalTask.category;
+                    }
+
+                    if (log.eventType.startsWith('timer_stopped_') && log.details && typeof log.details.actualDurationMs === 'number') {
+                         // Sum up durations if a task is stopped and restarted. This assumes one log.details.actualDurationMs per 'stop'
+                        dailyTaskAnalysis[log.taskId].actualDurationMs += log.details.actualDurationMs;
+                    }
+                    if (log.eventType === 'task_completed_manual_check' || log.eventType === 'task_auto_completed_time_passed') {
+                        dailyTaskAnalysis[log.taskId].completed = true;
+                    }
+                }
+            });
+
+            for (const taskId in dailyTaskAnalysis) {
+                const taskAn = dailyTaskAnalysis[taskId];
+                const originalScheduledTask = scheduleForDay.find(t => t.id === taskId);
+
+                if (taskAn.completed && originalScheduledTask && originalScheduledTask.duration) {
+                    totalCompletedTasksWithDuration++;
+                }
+                if (taskAn.category && taskAn.actualDurationMs > 0) {
+                    overallTimeByCategory[taskAn.category] = (overallTimeByCategory[taskAn.category] || 0) + taskAn.actualDurationMs;
+                }
+            }
+        });
+
+        summaryHtml += `<h3>Total Time Spent by Category (Across ${uniqueLoggedDays.length} day(s))</h3>`;
+        if (Object.keys(overallTimeByCategory).length > 0) {
+            summaryHtml += '<ul>';
+            for (const category in overallTimeByCategory) {
+                summaryHtml += `<li><strong>${category}:</strong> ${formatDuration(overallTimeByCategory[category])}</li>`;
+            }
+            summaryHtml += '</ul>';
+        } else {
+            summaryHtml += '<p>No categorized time tracked across the loaded days.</p>';
+        }
+
+        summaryHtml += '<h3>Overall Task Completion (for tasks with scheduled duration)</h3>';
+        if (totalScheduledTasksWithDuration > 0) {
+            const overallCompletionRate = (totalCompletedTasksWithDuration / totalScheduledTasksWithDuration * 100).toFixed(1);
+            summaryHtml += `<p class="summary-card">Total scheduled tasks (with duration): ${totalScheduledTasksWithDuration}<br>
+                              Total completed tasks (with duration): ${totalCompletedTasksWithDuration}<br>
+                              Overall Completion Rate: <strong>${overallCompletionRate}%</strong></p>`;
+        } else {
+            summaryHtml += '<p>No tasks with scheduled duration found across the loaded days.</p>';
+        }
+        
+        summaryHtml += '<h3>Logged Event Type Frequencies</h3>';
+        if (Object.keys(eventTypeCounts).length > 0) {
+            summaryHtml += '<ul>';
+            const sortedEventTypes = Object.entries(eventTypeCounts).sort(([,a],[,b]) => b-a);
+            sortedEventTypes.forEach(([eventType, count]) => {
+                summaryHtml += `<li><strong>${eventType}:</strong> ${count}</li>`;
+            });
+            summaryHtml += '</ul>';
+        } else {
+            summaryHtml += '<p>No event types logged.</p>';
+        }
+
+        return summaryHtml;
+    }
+
+</script>
+</body>
+</html>
