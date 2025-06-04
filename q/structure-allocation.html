@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Structures - Compiler Processing Notes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #34495e;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            margin-top: 30px;
+            font-size: 1.4em;
+        }
+        
+        h3 {
+            color: #2980b9;
+            font-size: 1.2em;
+            margin-top: 25px;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #34495e;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .inline-code {
+            background: #f8f9fa;
+            color: #e74c3c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            border: 1px solid #e9ecef;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+        
+        .section {
+            margin: 25px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(52, 152, 219, 0.05);
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .separator {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 30px 0;
+            border-radius: 1px;
+        }
+        
+        ol {
+            padding-left: 20px;
+        }
+        
+        ol li {
+            margin: 10px 0;
+            padding: 8px 0;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .step-list {
+            background: rgba(46, 204, 113, 0.1);
+            border-left: 4px solid #2ecc71;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖥️ C Structures - Compiler Processing</h1>
+        
+        <div class="section">
+            <h2><span class="emoji">✅</span>What is a Structure in C?</h2>
+            <p>A <span class="highlight">structure</span> in C is a <span class="highlight">user-defined data type</span> that allows grouping variables of <span class="highlight">different types</span> under one name.</p>
+            
+            <p><strong>Example:</strong></p>
+            <pre><code>struct Point {
+    int x;
+    int y;
+};</code></pre>
+            
+            <p>Here, <span class="inline-code">Point</span> is a structure with two integer members: <span class="inline-code">x</span> and <span class="inline-code">y</span>.</p>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="section">
+            <h2><span class="emoji">🧩</span>How Does a Compiler Handle Structures?</h2>
+            <p>When the compiler sees a structure:</p>
+            
+            <div class="step-list">
+                <ol>
+                    <li><strong>Analyzes the data types</strong> of each member.</li>
+                    <li><strong>Determines memory size</strong> and <strong>alignment requirements</strong>.</li>
+                    <li><strong>Calculates the offset</strong> of each member within the structure.</li>
+                    <li>Allocates <strong>contiguous memory</strong> for structure variables.</li>
+                    <li>Generates <strong>code</strong> for accessing and modifying structure members.</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="section">
+            <h2><span class="emoji">📦</span>Memory Allocation & Alignment</h2>
+            <p>Each data type typically has <span class="highlight">alignment requirements</span>:</p>
+            <ul>
+                <li>For example, an <span class="inline-code">int</span> often needs to be aligned to a <strong>4-byte boundary</strong>.</li>
+            </ul>
+            
+            <p>So, in:</p>
+            <pre><code>struct Point {
+    int x;
+    int y;
+};</code></pre>
+            
+            <ul>
+                <li><span class="inline-code">x</span> is placed at offset <span class="inline-code">0</span>.</li>
+                <li><span class="inline-code">y</span> is placed at offset <span class="inline-code">4</span> (next 4-byte boundary).</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Hence, total size = 8 bytes (no padding needed here).</strong><br>
+                If you had a <span class="inline-code">char</span> in between, the compiler might add <strong>padding</strong> to maintain alignment.
+            </div>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="section">
+            <h2><span class="emoji">🧑‍💻</span>Simple C Code Example</h2>
+            <pre><code>#include &lt;stdio.h&gt;
+
+struct Point {
+    int x;
+    int y;
+};
+
+int main() {
+    struct Point p1;
+    p1.x = 10;
+    p1.y = 20;
+    return 0;
+}</code></pre>
+            
+            <p><strong>Here:</strong></p>
+            <ul>
+                <li>Structure <span class="inline-code">Point</span> is declared with two integers.</li>
+                <li>A variable <span class="inline-code">p1</span> of type <span class="inline-code">struct Point</span> is created.</li>
+                <li>Its members <span class="inline-code">x</span> and <span class="inline-code">y</span> are assigned values.</li>
+            </ul>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="section">
+            <h2><span class="emoji">🧾</span>Intermediate Code Generation – Three Address Code (TAC)</h2>
+            
+            <h3>What is TAC?</h3>
+            <p><span class="highlight">Three Address Code</span> is a type of intermediate representation (IR) used in compilers. It breaks complex statements into simpler ones with:</p>
+            <ul>
+                <li>At most <strong>3 operands</strong> per instruction</li>
+                <li><strong>Temporary variables</strong> to hold intermediate results</li>
+            </ul>
+            
+            <h3>TAC for <span class="inline-code">p1.x = 10; p1.y = 20;</span></h3>
+            <p>Assuming the compiler treats <span class="inline-code">p1</span> as a base address:</p>
+            
+            <pre><code>t1 = 10
+*(p1 + 0) = t1   // p1.x is at offset 0
+t2 = 20
+*(p1 + 4) = t2   // p1.y is at offset 4</code></pre>
+            
+            <p><strong>Here:</strong></p>
+            <ul>
+                <li><span class="inline-code">t1</span> and <span class="inline-code">t2</span> are temporary variables.</li>
+                <li><span class="inline-code">p1</span> is the base address of the structure in memory.</li>
+                <li>Offsets are calculated by the compiler during structure layout.</li>
+            </ul>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="section">
+            <h2><span class="emoji">⚙️</span>Pseudo Assembly Code</h2>
+            <p>Now let's convert the TAC to <span class="highlight">pseudo assembly instructions</span> (simplified and architecture-neutral):</p>
+            
+            <pre><code>MOV R1, #10         ; Move 10 to register R1
+STORE R1, p1+0      ; Store value in R1 at address p1 + 0 (x)
+MOV R2, #20         ; Move 20 to register R2
+STORE R2, p1+4      ; Store value in R2 at address p1 + 4 (y)</code></pre>
+            
+            <p><strong>Explanation:</strong></p>
+            <ul>
+                <li><span class="inline-code">MOV R1, #10</span> loads the constant <span class="inline-code">10</span> into register <span class="inline-code">R1</span>.</li>
+                <li><span class="inline-code">STORE R1, p1+0</span> writes the value in <span class="inline-code">R1</span> to memory at offset 0 from <span class="inline-code">p1</span>.</li>
+                <li>Same for the second pair for <span class="inline-code">y</span>.</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Note:</strong> In actual machine code, there would be real memory addresses and more specific instructions depending on the CPU architecture.
+            </div>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="section">
+            <h2><span class="emoji">📚</span>Summary Table</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Concept</th>
+                            <th>Description / Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Structure in C</strong></td>
+                            <td>Group of variables under one name</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Example Struct</strong></td>
+                            <td><code>struct Point { int x; int y; };</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Structure Size</strong></td>
+                            <td>8 bytes (4 for <code>x</code>, 4 for <code>y</code>)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Offsets</strong></td>
+                            <td><code>x</code> at offset 0, <code>y</code> at offset 4</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TAC</strong></td>
+                            <td><code>*(p1 + 0) = 10</code>, <code>*(p1 + 4) = 20</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pseudo Assembly</strong></td>
+                            <td><code>MOV</code>, <code>STORE</code> instructions using structure offsets</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Purpose of TAC & Assembly</strong></td>
+                            <td>Bridges high-level code and final machine-level code</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
