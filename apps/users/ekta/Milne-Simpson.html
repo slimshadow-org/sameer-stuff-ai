@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solution by Milne-Simpson Method</title>
+    
+    <!-- KaTeX for LaTeX Rendering - CORRECTED LINKS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" 
+        onload="renderMathInElement(document.body, {delimiters: [ {left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\[', right: '\\]', display: true}, {left: '\\(', right: '\\)', display: false} ]});"></script>
+
+    <!-- Custom CSS for Styling (No changes here) -->
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 25px 45px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        h1, h2, h3 {
+            color: #0056b3;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        h1 { font-size: 2.2em; text-align: center; border-bottom: none; }
+        h2 { font-size: 1.8em; }
+        h3 { font-size: 1.5em; border-bottom: 1px solid #ced4da; }
+        .problem-box {
+            background-color: #e9f7ff;
+            border: 2px solid #b3e0ff;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 1.3em;
+        }
+        .formula-box {
+            background-color: #f1f3f5;
+            border-left: 5px solid #007bff;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        th, td {
+            border: 1px solid #ced4da;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .final-answer {
+            background-color: #d4edda;
+            border: 2px solid #c3e6cb;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.3em;
+            text-align: center;
+            font-weight: bold;
+            color: #155724;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Solution by Milne-Simpson Method</h1>
+
+    <h2>The Problem</h2>
+    <p>Apply the Milne-Simpson method to solve the initial value problem:</p>
+    <div class="problem-box">
+        $$ \frac{dy}{dx} = x - y^2, \quad \text{with } y(0) = 0 $$
+    </div>
+    <p>The solution is required in the range \(0 \le x \le 1\) with a step size of \(h=0.2\).</p>
+    <hr>
+
+    <h2>Part 1: Strategy - Generating Starting Values</h2>
+    <p>The Milne-Simpson method is a multi-step method, requiring four previous points ($y_{n-3}, y_{n-2}, y_{n-1}, y_n$) to compute the next point ($y_{n+1}$). Since we only have one point, $y_0$, we must first generate $y_1, y_2,$ and $y_3$ using a single-step method. We will use the highly accurate <strong>Runge-Kutta 4th Order (RK4)</strong> method. Let \( f(x,y) = x - y^2 \).</p>
+    
+    <h2>Part 2: Generating Values with RK4 Method</h2>
+
+    <h3>Step 2.1: Calculate \(y_1 = y(0.2)\)</h3>
+    <p>With \(x_0 = 0\), \(y_0 = 0\), and \(h=0.2\):</p>
+    <div class="formula-box">$$ k_1 = h \cdot f(x_0, y_0) = 0.2 \cdot f(0, 0) = 0.2 \cdot (0 - 0^2) = \mathbf{0} $$</div>
+    <div class="formula-box">$$ k_2 = h \cdot f(x_0 + \tfrac{h}{2}, y_0 + \tfrac{k_1}{2}) = 0.2 \cdot f(0.1, 0) = 0.2 \cdot (0.1 - 0^2) = \mathbf{0.02} $$</div>
+    <div class="formula-box">$$ k_3 = h \cdot f(x_0 + \tfrac{h}{2}, y_0 + \tfrac{k_2}{2}) = 0.2 \cdot f(0.1, 0.01) = 0.2 \cdot (0.1 - 0.01^2) = \mathbf{0.01998} $$</div>
+    <div class="formula-box">$$ k_4 = h \cdot f(x_0 + h, y_0 + k_3) = 0.2 \cdot f(0.2, 0.01998) = 0.2 \cdot (0.2 - 0.01998^2) = \mathbf{0.03992} $$</div>
+    <p>The final value is:</p>
+    <div class="formula-box">$$ y_1 = y_0 + \frac{1}{6}(k_1 + 2k_2 + 2k_3 + k_4) = 0 + \frac{1}{6}(0 + 2(0.02) + 2(0.01998) + 0.03992) = \mathbf{0.01998} $$</div>
+
+    <h3>Step 2.2: Calculate \(y_2 = y(0.4)\)</h3>
+    <p>With \(x_1 = 0.2\) and \(y_1 = 0.01998\), the RK4 calculation gives:</p>
+    <div class="formula-box">$$ y_2 = \mathbf{0.07947} $$</div>
+    
+    <h3>Step 2.3: Calculate \(y_3 = y(0.6)\)</h3>
+    <p>With \(x_2 = 0.4\) and \(y_2 = 0.07947\), the RK4 calculation gives:</p>
+    <div class="formula-box">$$ y_3 = \mathbf{0.17619} $$</div>
+    
+    <hr>
+
+    <h2>Part 3: Applying the Milne-Simpson Method</h2>
+    <h3>Preparation: Summary of Known Values</h3>
+    <p>We now have our four required starting points. Let's calculate their \(f_i = x_i - y_i^2\) values.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Index (i)</th>
+                <th>$$x_i$$</th>
+                <th>$$y_i$$</th>
+                <th>$$f_i = x_i - y_i^2$$</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>0</td><td>0.0</td><td>0.00000</td><td>0.00000</td></tr>
+            <tr><td>1</td><td>0.2</td><td>0.01998</td><td>0.19960</td></tr>
+            <tr><td>2</td><td>0.4</td><td>0.07947</td><td>0.39368</td></tr>
+            <tr><td>3</td><td>0.6</td><td>0.17619</td><td>0.56896</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Step 3.1: Calculate \(y_4 = y(0.8)\)</h3>
+    <h4>1. Predictor Step:</h4>
+    <div class="formula-box">$$ y_{4,P} = y_0 + \frac{4h}{3} (2f_1 - f_2 + 2f_3) = 0 + \frac{4(0.2)}{3} (2(0.19960) - 0.39368 + 2(0.56896)) = \mathbf{0.30492} $$</div>
+    <h4>2. Corrector Step:</h4>
+    <p>First, calculate \(f_{4,P} = f(x_4, y_{4,P}) = 0.8 - (0.30492)^2 = 0.70702\).</p>
+    <div class="formula-box">$$ y_{4,C} = y_2 + \frac{h}{3} (f_2 + 4f_3 + f_{4,P}) = 0.07947 + \frac{0.2}{3} (0.39368 + 4(0.56896) + 0.70702) = \mathbf{0.30457} $$</div>
+    <p>We take the corrected value: \(\mathbf{y_4 = 0.30457}\).</p>
+
+    <h3>Step 3.2: Calculate \(y_5 = y(1.0)\)</h3>
+    <h4>1. Predictor Step:</h4>
+    <p>First, update \(f_4\) with the corrected value: \(f_4 = 0.8 - (0.30457)^2 = 0.70724\).</p>
+    <div class="formula-box">$$ y_{5,P} = y_1 + \frac{4h}{3} (2f_2 - f_3 + 2f_4) = 0.01998 + \frac{4(0.2)}{3} (2(0.39368) - 0.56896 + 2(0.70724)) = \mathbf{0.45541} $$</div>
+    <h4>2. Corrector Step:</h4>
+    <p>First, calculate \(f_{5,P} = f(x_5, y_{5,P}) = 1.0 - (0.45541)^2 = 0.79265\).</p>
+    <div class="formula-box">$$ y_{5,C} = y_3 + \frac{h}{3} (f_3 + 4f_4 + f_{5,P}) = 0.17619 + \frac{0.2}{3} (0.56896 + 4(0.70724) + 0.79265) = \mathbf{0.45556} $$</div>
+    <p>We take the corrected value: \(\mathbf{y_5 = 0.45556}\).</p>
+
+    <hr>
+    
+    <h2>Final Summary</h2>
+    <p>The calculated values for the solution in the range \(0 \le x \le 1\) are:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>$$x$$</th>
+                <th>$$y(x)$$ (approximate)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>0.0</td><td>0.00000</td></tr>
+            <tr><td>0.2</td><td>0.01998</td></tr>
+            <tr><td>0.4</td><td>0.07947</td></tr>
+            <tr><td>0.6</td><td>0.17619</td></tr>
+            <tr><td>0.8</td><td>0.30457</td></tr>
+            <tr><td>1.0</td><td><strong>0.45556</strong></td></tr>
+        </tbody>
+    </table>
+
+    <div class="final-answer">
+        The final solution at x = 1.0 is: $$ y(1.0) \approx 0.45556 $$
+    </div>
+
+</div>
+
+</body>
+</html>
