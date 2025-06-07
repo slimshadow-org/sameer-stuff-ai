@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Derivation of Euler's Method</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral (Linen/Slate) -->
+    <!-- Application Structure Plan: The application is designed as a single-page, multi-section narrative to guide the user through learning Euler's method. It starts with an interactive conceptual visualization (Section 1) to build intuition, followed by a clear, static breakdown of the mathematical derivation (Section 2), and concludes with an interactive "sandbox" (Section 3) for hands-on application. This structure was chosen over a dashboard because a pedagogical goal requires a guided, step-by-step learning path, moving from concept to theory to practice, which enhances understanding and retention for a student audience. -->
+    <!-- Visualization & Content Choices: 
+        1. Concept Demo: Report Info (Geometric Interpretation) -> Goal (Inform/Demonstrate) -> Viz (Chart.js Line Chart with a dynamic tangent) -> Interaction (Slider for step size 'h' updates tangent endpoint in real-time) -> Justification (Visually connects the abstract idea of tangent approximation to a concrete action, making it more intuitive than static text) -> Library (Chart.js, Vanilla JS).
+        2. Derivation: Report Info (Taylor Series, Approximation) -> Goal (Explain) -> Viz (Structured HTML/CSS text blocks) -> Interaction (None) -> Justification (Clarity and readability are key for mathematical formulas; interactivity would be distracting) -> Library (Tailwind CSS for typography/layout).
+        3. Sandbox: Report Info (Iterative Formula) -> Goal (Apply/Explore) -> Viz (HTML Form, Results Table, Chart.js Scatter/Line Chart) -> Interaction (User inputs function and parameters, button click runs simulation, populates table and updates chart with results vs. true solution) -> Justification (Active learning reinforces the process and visually demonstrates the method's accuracy and error) -> Library (Chart.js, Vanilla JS). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcf9; /* A very light, warm off-white */
+            color: #334155; /* Slate 700 */
+        }
+        h1, h2, h3 {
+            font-family: 'Lora', serif;
+        }
+        .equation {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            background-color: #f1f5f9; /* Slate 100 */
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0; /* Slate 200 */
+            text-align: center;
+            margin: 1rem 0;
+            font-size: 1.125rem;
+            word-wrap: break-word;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        .accent-bg {
+            background-color: #e0e7ff; /* Indigo 100 */
+        }
+        .accent-text {
+            color: #3730a3; /* Indigo 800 */
+        }
+        .btn {
+            background-color: #4f46e5; /* Indigo 600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #4338ca; /* Indigo 700 */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-12 md:mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">Understanding Euler's Method</h1>
+            <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">An interactive guide to the concept, derivation, and application of this fundamental numerical method.</p>
+        </header>
+
+        <!-- Section 1: The Concept -->
+        <section id="concept" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">The Core Idea: Tangent Approximation</h2>
+                <p class="mt-3 max-w-3xl mx-auto text-slate-600">
+                    This section introduces the central concept of Euler's method. We want to approximate a curve, but we only know its starting point and the equation for its slope at any point. The method works by taking small steps along the tangent line at each point to predict the next point on the curve. Use the slider below to see how the step size, 'h', affects the approximation.
+                </p>
+            </div>
+            
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-slate-200">
+                <div class="chart-container">
+                    <canvas id="conceptChart"></canvas>
+                </div>
+                <div class="mt-6 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+                    <div class="w-full md:w-1/2">
+                        <label for="stepSizeSlider" class="block font-medium text-slate-700 mb-1">Step Size (h): <span id="stepSizeLabel" class="font-bold accent-text">1.0</span></label>
+                        <input id="stepSizeSlider" type="range" min="0.1" max="2.0" value="1.0" step="0.05" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div class="p-4 rounded-lg accent-bg w-full md:w-auto text-center">
+                        <p class="text-sm text-slate-600">Approximated Point (<span class="font-semibold" id="approxCoords">x₁, y₁</span>):</p>
+                        <p class="font-bold text-xl accent-text" id="approxValue">(2.00, 2.00)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Derivation -->
+        <section id="derivation" class="mb-16 md:mb-24 scroll-mt-20">
+             <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Derivation of Euler's Method</h2>
+                <p class="mt-3 max-w-3xl mx-auto text-slate-600">
+                    This section provides a formal, step-by-step derivation of Euler's method, suitable for understanding and reproducing in an exam.
+                </p>
+            </div>
+
+            <div class="max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-xl font-semibold mb-4 text-slate-700">1. Problem Statement</h3>
+                <p class="text-slate-600 mb-2">We consider a first-order ordinary differential equation (ODE) of the form:</p>
+                <div class="equation">dy/dx = f(x, y)</div>
+                <p class="text-slate-600 mt-4 mb-2">with a given initial condition:</p>
+                <div class="equation">y(x₀) = y₀</div>
+                 <p class="text-slate-600 mt-4">Our goal is to find the approximate value of y for a given value of x. In this method, we find the solution as a set of points (x₀, y₀), (x₁, y₁), (x₂, y₂), ...</p>
+                
+                <hr class="my-8 border-slate-200">
+
+                <h3 class="text-xl font-semibold mb-4 text-slate-700">2. Foundation: Taylor Series Expansion</h3>
+                <p class="text-slate-600 mb-2">The derivation of Euler's method is based on the Taylor series expansion of a function y(x) about a point x&#x2099;. Let y = g(x) be the exact solution of the given ODE. The Taylor series expansion of g(x) around the point x&#x2099; is given by:</p>
+                <div class="equation">g(x&#x2099;₊₁) = g(x&#x2099;) + (x&#x2099;₊₁ - x&#x2099;)g'(x&#x2099;) + [(x&#x2099;₊₁ - x&#x2099;)²/2!]g''(x&#x2099;) + ...</div>
+                <p class="text-slate-600 mt-4">Let y&#x2099; be the approximate value of the solution at x&#x2099;, so y&#x2099; ≈ g(x&#x2099;). Let h be the step size, where h = x&#x2099;₊₁ - x&#x2099;. The series becomes:</p>
+                <div class="equation">y&#x2099;₊₁ = y&#x2099; + h·y'(x&#x2099;) + (h²/2)·y''(x&#x2099;) + (h³/6)·y'''(x&#x2099;) + ...</div>
+                
+                <hr class="my-8 border-slate-200">
+                
+                <h3 class="text-xl font-semibold mb-4 text-slate-700">3. The Approximation</h3>
+                <p class="text-slate-600 mb-2">Euler's method is simple because we assume the step size h is very small. If h is small, terms with h², h³, etc., are significantly smaller than the term with h. Therefore, we can truncate the Taylor series by neglecting all terms of order h² and higher. This gives us:</p>
+                <div class="equation">y&#x2099;₊₁ ≈ y&#x2099; + h·y'(x&#x2099;)</div>
+                <p class="text-slate-600 mt-4">The error in this approximation, known as the local truncation error, is of the order O(h²).</p>
+
+                <hr class="my-8 border-slate-200">
+
+                <h3 class="text-xl font-semibold mb-4 text-slate-700">4. Final Formula</h3>
+                <p class="text-slate-600 mb-2">From our original differential equation, we know that y' = f(x, y). So, at the point (x&#x2099;, y&#x2099;), the derivative is:</p>
+                <div class="equation">y'(x&#x2099;) = f(x&#x2099;, y&#x2099;)</div>
+                <p class="text-slate-600 mt-4 mb-2">Substituting this into our approximate equation from Step 3, we arrive at the iterative formula for Euler's method:</p>
+                <div class="equation accent-bg accent-text">y&#x2099;₊₁ = y&#x2099; + h · f(x&#x2099;, y&#x2099;)</div>
+                
+                <hr class="my-8 border-slate-200">
+
+                <h3 class="text-xl font-semibold mb-4 text-slate-700">5. The Iterative Process</h3>
+                <p class="text-slate-600 mb-2">Starting with the initial condition (x₀, y₀), we use the formula to find the next point (x₁, y₁):</p>
+                <ul class="list-disc list-inside text-slate-600 space-y-2">
+                    <li><b>For n = 0:</b> y₁ = y₀ + h·f(x₀, y₀) &nbsp; where x₁ = x₀ + h</li>
+                    <li><b>For n = 1:</b> y₂ = y₁ + h·f(x₁, y₁) &nbsp; where x₂ = x₁ + h</li>
+                    <li><b>For n = 2:</b> y₃ = y₂ + h·f(x₂, y₂) &nbsp; where x₃ = x₂ + h</li>
+                </ul>
+                <p class="text-slate-600 mt-4">...and so on. We continue this process until we reach the desired value of x.</p>
+
+                <hr class="my-8 border-slate-200">
+
+                <h3 class="text-xl font-semibold mb-4 text-slate-700">Geometric Interpretation</h3>
+                <p class="text-slate-600">Geometrically, Euler's method approximates the solution curve with a sequence of short line segments. At each point (x&#x2099;, y&#x2099;), we calculate the slope of the curve using the differential equation, m = f(x&#x2099;, y&#x2099;). We then proceed along the tangent line for a small distance h to find the next point, (x&#x2099;₊₁, y&#x2099;₊₁). This new point is an approximation of the actual point on the solution curve. The method essentially replaces the curve with its tangent in each small interval.</p>
+            </div>
+        </section>
+
+
+        <!-- Section 3: Interactive Sandbox -->
+        <section id="sandbox" class="scroll-mt-20">
+             <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Interactive Sandbox</h2>
+                <p class="mt-3 max-w-3xl mx-auto text-slate-600">
+                    Now it's time to apply the formula. Define your own simple first-order differential equation and initial conditions below. The application will use Euler's method to compute the solution step-by-step. The results will be displayed in the table and plotted on the graph, alongside the true analytical solution for comparison.
+                </p>
+            </div>
+
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-slate-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div>
+                        <label for="functionInput" class="block text-sm font-medium text-slate-700">dy/dx = f(x, y)</label>
+                        <input type="text" id="functionInput" value="y - x" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="x0Input" class="block text-sm font-medium text-slate-700">Initial x₀</label>
+                        <input type="number" id="x0Input" value="0" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="y0Input" class="block text-sm font-medium text-slate-700">Initial y₀</label>
+                        <input type="number" id="y0Input" value="2" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                     <div>
+                        <label for="hInput" class="block text-sm font-medium text-slate-700">Step Size (h)</label>
+                        <input type="number" id="hInput" value="0.2" step="0.05" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="stepsInput" class="block text-sm font-medium text-slate-700">Number of Steps</label>
+                        <input type="number" id="stepsInput" value="10" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 flex items-end">
+                         <button id="calculateBtn" class="btn w-full md:w-auto">Calculate & Visualize</button>
+                    </div>
+                </div>
+
+                <div id="sandboxError" class="hidden my-4 p-4 text-red-800 bg-red-100 border border-red-200 rounded-lg"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">n</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">x&#x2099;</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">y&#x2099; (Euler)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">f(x&#x2099;, y&#x2099;)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTable" class="bg-white divide-y divide-slate-200">
+                                <!-- Results will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-container h-[400px]">
+                        <canvas id="sandboxChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="text-center py-8 mt-12 border-t border-slate-200">
+        <p class="text-slate-500">Interactive Visualization by Gemini</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Section 1: Concept Chart ---
+            const ctxConcept = document.getElementById('conceptChart').getContext('2d');
+            const stepSizeSlider = document.getElementById('stepSizeSlider');
+            const stepSizeLabel = document.getElementById('stepSizeLabel');
+            const approxValue = document.getElementById('approxValue');
+            const approxCoords = document.getElementById('approxCoords');
+
+            const trueFunction = x => Math.exp(0.5 * x) + 0.5 * x + 0.25;
+            const trueFunctionDerivative = (x, y) => 0.5 * (y - 0.5*x - 0.25) + 0.5; // Simplified from a known ODE
+
+            const startPoint = { x: 1, y: trueFunction(1) };
+            
+            let conceptChart;
+
+            function updateConceptChart() {
+                const h = parseFloat(stepSizeSlider.value);
+                const slope = trueFunctionDerivative(startPoint.x, startPoint.y);
+                const approxY = startPoint.y + slope * h;
+                const approxX = startPoint.x + h;
+
+                stepSizeLabel.textContent = h.toFixed(2);
+                approxValue.textContent = `(${approxX.toFixed(2)}, ${approxY.toFixed(2)})`;
+                approxCoords.textContent = `x₁, y₁`;
+
+                const trueCurveData = Array.from({ length: 41 }, (_, i) => {
+                    const x = i * 0.1;
+                    return { x: x, y: trueFunction(x) };
+                });
+
+                conceptChart.data.datasets[0].data = trueCurveData; // True curve
+                conceptChart.data.datasets[1].data = [startPoint]; // Starting point
+                conceptChart.data.datasets[2].data = [startPoint, { x: approxX, y: approxY }]; // Tangent line
+                conceptChart.data.datasets[3].data = [{ x: approxX, y: approxY }]; // Approximated point
+                
+                conceptChart.update();
+            }
+
+            function createConceptChart() {
+                conceptChart = new Chart(ctxConcept, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'True Solution Curve',
+                                data: [],
+                                borderColor: '#94a3b8', // Slate 400
+                                borderWidth: 2,
+                                tension: 0.4,
+                                pointRadius: 0,
+                                fill: false
+                            },
+                            {
+                                type: 'scatter',
+                                label: 'Starting Point (x₀, y₀)',
+                                data: [],
+                                backgroundColor: '#4f46e5', // Indigo 600
+                                pointRadius: 6,
+                                pointHoverRadius: 8
+                            },
+                            {
+                                label: 'Tangent Line',
+                                data: [],
+                                borderColor: '#ef4444', // Red 500
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                fill: false,
+                                pointRadius: 0
+                            },
+                            {
+                                type: 'scatter',
+                                label: 'Euler Approximation (x₁, y₁)',
+                                data: [],
+                                backgroundColor: '#f87171', // Red 400
+                                pointRadius: 6,
+                                pointHoverRadius: 8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: { display: true, text: 'x' }
+                            },
+                            y: {
+                                title: { display: true, text: 'y' }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        }
+                    }
+                });
+                updateConceptChart();
+            }
+            
+            stepSizeSlider.addEventListener('input', updateConceptChart);
+            createConceptChart();
+
+
+            // --- Section 3: Sandbox ---
+            const functionInput = document.getElementById('functionInput');
+            const x0Input = document.getElementById('x0Input');
+            const y0Input = document.getElementById('y0Input');
+            const hInput = document.getElementById('hInput');
+            const stepsInput = document.getElementById('stepsInput');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resultsTable = document.getElementById('resultsTable');
+            const sandboxError = document.getElementById('sandboxError');
+            const ctxSandbox = document.getElementById('sandboxChart').getContext('2d');
+            let sandboxChart;
+
+            function createSandboxChart() {
+                sandboxChart = new Chart(ctxSandbox, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Euler Approximation',
+                            data: [],
+                            backgroundColor: '#4f46e5', // Indigo 600
+                            borderColor: '#4f46e5',
+                            showLine: true,
+                            fill: false
+                        }, {
+                            label: 'True Solution (if available)',
+                            data: [],
+                            borderColor: '#94a3b8', // Slate 400
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            showLine: true,
+                            tension: 0.1,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { type: 'linear', position: 'bottom', title: { display: true, text: 'x' } },
+                            y: { title: { display: true, text: 'y' } }
+                        }
+                    }
+                });
+            }
+
+            function runSimulation() {
+                try {
+                    sandboxError.classList.add('hidden');
+                    const funcStr = functionInput.value;
+                    const f = new Function('x', 'y', `return ${funcStr}`);
+                    
+                    let x0 = parseFloat(x0Input.value);
+                    let y0 = parseFloat(y0Input.value);
+                    const h = parseFloat(hInput.value);
+                    const steps = parseInt(stepsInput.value);
+
+                    if (isNaN(x0) || isNaN(y0) || isNaN(h) || isNaN(steps) || h <= 0 || steps <= 0) {
+                        throw new Error("Please enter valid numerical inputs. Step size and count must be positive.");
+                    }
+
+                    const eulerPoints = [];
+                    let x = x0;
+                    let y = y0;
+
+                    resultsTable.innerHTML = '';
+
+                    for (let i = 0; i <= steps; i++) {
+                        eulerPoints.push({ x: x, y: y });
+                        
+                        const slope = f(x, y);
+                        
+                        const row = resultsTable.insertRow();
+                        row.innerHTML = `
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">${i}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">${x.toFixed(3)}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-800">${y.toFixed(3)}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">${slope.toFixed(3)}</td>
+                        `;
+                        
+                        y = y + h * slope;
+                        x = x + h;
+                    }
+                    
+                    sandboxChart.data.datasets[0].data = eulerPoints;
+
+                    // Specific known solution for default case y' = y - x, y(0)=2
+                    // Solution is y = x + 1 + e^x
+                    if (funcStr.replace(/\s/g, '') === 'y-x' && x0 === 0 && y0 === 2) {
+                         const trueSolutionPoints = [];
+                         for (let i = 0; i < eulerPoints.length; i++) {
+                             const currentX = eulerPoints[i].x;
+                             trueSolutionPoints.push({x: currentX, y: currentX + 1 + Math.exp(currentX)});
+                         }
+                         sandboxChart.data.datasets[1].data = trueSolutionPoints;
+                         sandboxChart.data.datasets[1].label = 'True Solution (y=x+1+e^x)';
+                    } else {
+                        sandboxChart.data.datasets[1].data = [];
+                        sandboxChart.data.datasets[1].label = 'True Solution (N/A)';
+                    }
+
+                    sandboxChart.update();
+
+                } catch (e) {
+                    sandboxError.textContent = `Error: ${e.message}. Please check the function syntax and inputs. Use basic JS math operators like +, -, *, /.`;
+                    sandboxError.classList.remove('hidden');
+                }
+            }
+
+            calculateBtn.addEventListener('click', runSimulation);
+            createSandboxChart();
+            runSimulation(); // Initial run on page load
+
+        });
+    </script>
+</body>
+</html>
